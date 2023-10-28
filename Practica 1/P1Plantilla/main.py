@@ -151,7 +151,7 @@ def sacarVariablesVer(tablero):
     #varVer = sacarVariablesVer(tablero,)
 
 
-def buscarVar(listaVar, coorInicio):
+def buscarVar(listaVar, coorInicio, varHor):
     
     if(listaVar[0].horizontal()):
         for a in range(varHor[i].coorInicio[1], varHor[i].coorFin[1]+1):

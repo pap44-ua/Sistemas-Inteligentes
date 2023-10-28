@@ -35,6 +35,11 @@ class Variable:
         return self.restriccion
     
     def setRestriccion(self, newRestriccion):
-        self.restriccion=newRestriccion        
+        self.restriccion=newRestriccion      
+
+    def setNombre(self, nombre):
+        self.nombre=nombre
+    def getNombre(self):
+        return self.nombre
         
         
