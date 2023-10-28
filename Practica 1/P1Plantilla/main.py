@@ -7,6 +7,7 @@ from tablero import *
 from dominio import *
 from variable import *
 from pygame.locals import *
+from forwardchecking import *
 
 GREY=(190, 190, 190)
 NEGRO=(100,100, 100)
@@ -104,41 +105,45 @@ def imprimeAlmacen(almacen):
         print()
 
 
-def sacarVariablesHor(tablero):
+def sacarVariablesHor(tablero):#DUDA: Mirar bn si reconoce las variables de 1
     variables= []
     coorInicio=(0,0)
     for x in range(0, tablero.getAlto()):
-        print(coorInicio)
+        coorInicio=(x,0)
         for y in range( 0, tablero.getAncho()):
-            coorInicio = (x , coorInicio[1])
+            coorInicio = (x , coorInicio[1]) #Va actualizando la coorInicio, solo cambiará cuando se encuentre con una casilla negra
             
             if(y== tablero.getAncho()-1):
+                if(tablero.getCelda(x,y)==VACIA):
+                    variables.append(Variable((coorInicio),(x,y)))#si donde esta es vacio que lo tenga en cuenta
+                else:
+                    variables.append(Variable((coorInicio),(x,y-1)))#si donde esta esta en negro que no la cuente para la variable
                 
-                variables.append(Variable((coorInicio),(x,y)))
-                #coorInicio=(coorInicio[0],0)
-                
-            elif(tablero.getCelda(x,y)==LLENA and y+1!=tablero.getAncho()-1):#error aqui
-                variables.append(Variable((coorInicio),(x,y)))
-                coorInicio=(coorInicio[0],y+1)
-                
-            elif(tablero.getCelda(x,y)==LLENA and y+1==tablero.getAncho()-1):
-                variables.append(Variable((coorInicio),(x,y)))         
-                
+            elif(tablero.getCelda(x,y)==LLENA):#error aqui
+                variables.append(Variable((coorInicio),(x,y-1)))#-1 pq dnd estas es la casilla negra
+                coorInicio=(coorInicio[0],y+1)               
     
     return variables
 
-def sacarVariablesVer(tablero): #para mejorar juntar las dos funciones en una
-    
-    
+def sacarVariablesVer(tablero):
     variables = []
     coorInicio = (0, 0)
-    for y in range(0, tablero.getAlto()):
-        for x in range(0, tablero.getAncho()):
-            coorInicio = (x, coorInicio[1])
-            if (y + 1 >= tablero.getAlto()) or (tablero.getCelda(x, y + 1) == LLENA):
-                variables.append(Variable((coorInicio), (x, y)))
-                coorInicio = (coorInicio[0], y + 2)
-            
+
+    for y in range(tablero.getAncho()):
+        coorInicio = (0, y)
+        for x in range(tablero.getAlto()):
+            coorInicio = (coorInicio[0], y)  # Va actualizando la coorInicio, solo cambiará cuando se encuentre con una casilla negra
+
+            if x == tablero.getAlto() - 1:
+                if tablero.getCelda(x, y) == VACIA:
+                    variables.append(Variable(coorInicio, (x, y)))  # si donde está es vacío, tómalo en cuenta
+                else:
+                    variables.append(Variable(coorInicio, (x - 1, y)))  # si donde está está en negro, no lo cuentes para la variable
+
+            elif tablero.getCelda(x, y) == LLENA:
+                variables.append(Variable(coorInicio, (x - 1, y)))  # -1 porque donde estás es la casilla negra
+                coorInicio = (x + 1, coorInicio[1])
+
     return variables
 
 #def sacarVariables(tablero):
@@ -146,10 +151,38 @@ def sacarVariablesVer(tablero): #para mejorar juntar las dos funciones en una
     #varVer = sacarVariablesVer(tablero,)
 
 
-
-
+def buscarVar(listaVar, coorInicio):
+    
+    if(listaVar[0].horizontal()):
+        for a in range(varHor[i].coorInicio[1], varHor[i].coorFin[1]+1):
+            if((coorInicio[0]+1,coorInicio[1])==LLENA):
+                return Variable((-1,-1),(-1,-1))
+            if(coorInicio==listaVar[a].coorInicio):
+                return listaVar[a]
+            
+    else:
+        for a in range(varHor[i].coorInicio[0], varHor[i].coorFin[0]+1):
+            if((coorInicio[0],coorInicio[1]+1)==LLENA):
+                return Variable((-1,-1),(-1,-1))
+            if(coorInicio==listaVar[a].coorInicio):
+                return listaVar[a]
 
 #def logFC():
+
+# def start(tablero, variables, almacen):
+#     for variable in variables:
+#         tam_variable = variable.longitud()
+#         if tam_variable > 0:  # Asegúrate de que la variable tiene un tamaño mayor que cero
+#             primera_palabra = almacen[busca(almacen,tam_variable)].getLista()[0]  # Obtén la primera palabra del dominio del tamaño adecuado
+#             if variable.horizontal():
+#                 for x in range(variable.coorInicio[0], variable.coorFin[0] + 1):
+#                     letra = primera_palabra[x - variable.coorInicio[0]]  # Obtiene la letra correspondiente en la palabra
+#                     tablero.setCelda(x, variable.coorInicio[1], letra)
+#             else:
+#                 for y in range(variable.coorInicio[1], variable.coorFin[1] + 1):
+#                     letra = primera_palabra[y - variable.coorInicio[1]]  # Obtiene la letra correspondiente en la palabra
+#                     tablero.setCelda(variable.coorInicio[0], y, letra)
+
 
 
 #########################################################################  
@@ -192,7 +225,10 @@ def main():
                     print("FC")
                     varHor= sacarVariablesHor(tablero)
                     for i in varHor:
+                        print(i.coorInicio)
                         print(i.longitud())
+                        
+                    start(almacen,tablero,varHor)
                         
                     res=False #aquí llamar al forward checking
                     if res==False:
