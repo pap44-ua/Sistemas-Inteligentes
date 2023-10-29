@@ -1,4 +1,3 @@
-from forwardchecking import start
 import pygame
 import tkinter
 from tkinter import *
@@ -20,7 +19,7 @@ TAM=60  #tamaño de la celda
 FILS=5 # número de filas del crucigrama
 COLS=6 # número de columnas del crucigrama
 
-ID=0
+ID=None
 
 LLENA='*' 
 VACIA='-'
@@ -199,6 +198,8 @@ def buscarVar(listaVar, coorInicio): #NOTA: Si es de un solo hueco mirar que lo 
 # Principal
 #########################################################################
 def main():
+    global ID
+    
     root= tkinter.Tk() #para eliminar la ventana de Tkinter
     root.withdraw() #se cierra
     pygame.init()
@@ -238,7 +239,7 @@ def main():
                         print(i.coorInicio)
                         print(i.longitud())
                         
-                    start(almacen,tablero,varHor)
+                    uwu=start(almacen,tablero,varHor)
                         
                     res=False #aquí llamar al forward checking
                     if res==False:

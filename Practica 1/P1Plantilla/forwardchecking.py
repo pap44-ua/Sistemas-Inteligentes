@@ -9,51 +9,67 @@ from restriccion import *
 
 
 
-def restaur():
+def restaura(borrados,):
     print("restaura")
 
 
 
-def forward():
+def forward(var,borradas):
     print("forward")
 
-
-def FC(varHor):
-
-    borradas=[] #Tula de (palabra borrada , ID de quien lo ha borrado)
-
-    for var in varHor:
-        primerVar=var
-        primeraPal=primerVar.getDominio()[0]
-        primerVar.setDominio(primerVar.getDominio().pop(0))
-        primerVar.setPalabra(primeraPal)
-
-        for varRes in varHor[1:]: #Compruebo de las siguientes variables . Seguramente pueda optimizarlo
-            if(varRes.longitud()==primerVar.longitud()): #Si la longitud es igual
-                for lista in varRes.getDominio():
-                    if(lista==primeraPal):#Si la palabra es igual
-                        varRes.setDominio(varRes.getDominio().pop(0)) #La saco de la variable
-        for res in var.restriccion : #C3
+    for res in var.restriccion : #C3
             #if(var.getNombre()[res.getPosX()]==res.getVarY().getNombre()[res.getPosY()]):
             dominio = res.getY().getDominio().copy()
             for dom in dominio:
                 if(dom[res.getPosY()]!=var.getNombre(res.getPosX())):
                     borradas.append((dom,res.getY().getNombre()))   #AQUI TENGO QUE GUARDAR QN LA BORRA
                     res.getY().setDominio(res.getY().getDominio().remove(dom))
+                if not res.getY().getDominio(): #Si la lista esta vacia se sale
+                    return False
+                    
+    return True
+    #Hasta aqui C4 parte 1
+
+
+def FC(varHor):
+
+    borradas=[] #Tula de (palabra borrada , ID de quien lo ha borrado)
+
+
+    for index, var in enumerate(varHor):
+        primerVar=var
+        primeraPal=primerVar.getDominio()[0]
+        primerVar.setDominio(primerVar.getDominio().pop(0))
+        primerVar.setPalabra(primeraPal)
+
+        for varRes in varHor: #Compruebo de las siguientes variables . Seguramente pueda optimizarlo
+            if(varRes.longitud()==primerVar.longitud()): #Si la longitud es igual
+                for lista in varRes.getDominio():
+                    if(lista==primeraPal):#Si la palabra es igual
+                        varRes.setDominio(varRes.getDominio().pop(0)) #La saco de la variable
+        
+        #Si forward(i,a)
+            #si FC(i+1) return true
+        #restaura i
+        if var == varHor[-1]:
+            return True
+        if forward(var):
+            print(f"si FC(i+1) retorna cierto")
+            if(FC(varHor[1:])):
+                return True
+        rest=restaura()
             
-
-
-                
+    return False
+       
     #Recorrer el dominio de una variable
 
 
 
 def start(almacen,tablero,varHor, varVer):
     
-    aux=0
-    palabras=[]
+    #aux=0
+    #palabras=[]
 
-    
     #Guardamos todos los dominios en sus variables
 
     for var in varHor: #Establecemos todas las variables Horizontales
@@ -86,12 +102,15 @@ def start(almacen,tablero,varHor, varVer):
 
         
     fc = FC(varHor)
+
+#Si todo va bn imprimimos
+    for var in varHor:
+        for pos in range(var.getCoorIni(),var.getCoorFin()):
+            for letra in var.getPalabra():
+                Tablero.setCelda(pos[0],pos[1],letra)
+
     #Sacamos la primera palabra
     return fc
-
-
-
-
 
     #El C4 del mensaje que envio en el profesor ya no se hacerlo :_(
 

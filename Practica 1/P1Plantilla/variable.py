@@ -46,5 +46,11 @@ class Variable:
         self.nombre=nombre
     def getPalabra(self):
         return self.palabra
+    
+    def getCoorIni(self):
+        return self.coorInicio
+    
+    def getCoorFin(self):
+        return self.coorFin
         
         
