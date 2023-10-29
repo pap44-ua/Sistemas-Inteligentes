@@ -1,12 +1,13 @@
 from dominio import *
 
 class Variable:
-    def __init__(self, coorInicio, coorFin):
+    def __init__(self, coorInicio, coorFin, nombre):
         self.coorInicio=coorInicio
         self.coorFin = coorFin
         self.tam=self.longitud()
         self.dominio=[]
-        self.nombre=""
+        self.nombre=nombre
+        self.palabra=""
         self.restriccion=[]
     
     def horizontal (self):
@@ -41,5 +42,9 @@ class Variable:
         self.nombre=nombre
     def getNombre(self):
         return self.nombre
+    def setPalabra(self, nombre):
+        self.nombre=nombre
+    def getPalabra(self):
+        return self.palabra
         
         
