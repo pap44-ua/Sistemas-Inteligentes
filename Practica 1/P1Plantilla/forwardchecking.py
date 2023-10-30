@@ -9,13 +9,30 @@ from restriccion import *
 
 
 
-def restaura(var,borrados):
+def restaura(var,borrados): #Me da error pq no se asigna una variable
+    aux=0
+    
+    print()
     print("restaura")
+    print()
+    print()
     #Si el dominio de la restriccion Y se queda vacio hacemos esto
     #Borramos de la variable Y
     for elemento in borrados:
         if var.getNombre() == elemento[1]:
-            var.getResctriccion().getVarY().setDominio(var.getResctriccion().getVarY().getDominio().append(elemento[0]))
+            restriccion=var.getRestriccion()[aux].getY().getDominio()
+            print("La restriccion de la variable: ", var.getRestriccion()[aux])
+            print("La variable y de la restriccion de la variable: ", var.getRestriccion()[aux].getY())
+            print("Posicion Inicio varY: ", var.getRestriccion()[aux].getY().getCoorIni())
+            #print("El dominio de la variable y de la restriccion de la variable: ", var.getRestriccion()[aux].getY())
+            print()
+            print("La restriccion completa: ", restriccion)
+            print("El elemento: ", elemento)
+            print("La parte izq: ", elemento[0])
+            restriccion.append(elemento[0])
+            var.getRestriccion()[aux].getY().setDominio(restriccion)
+            
+        aux=aux+1
     #Borramos de la variable X
     var.setDominio(var.getDominio().remove(var.getPalabra()))
     
@@ -30,7 +47,7 @@ def forward(var,borradas):
             #if(var.getNombre()[res.getPosX()]==res.getVarY().getNombre()[res.getPosY()]):
             dominio = res.getY().getDominio().copy()
             for dom in dominio:
-                if(dom[res.getPosY()]!=var.getNombre(res.getPosX())):
+                if(dom[res.getPosY()]!=var.getNombre()):
                     borradas.append((dom,var.getNombre()))   #AQUI TENGO QUE GUARDAR QN LA BORRA
                     res.getY().setDominio(res.getY().getDominio().remove(dom))
                 if not res.getY().getDominio(): #Si la lista esta vacia se sale
@@ -53,7 +70,7 @@ def FC(varHor):
         primerVar.setDominio(primerVar.getDominio().pop(0))
         primerVar.setPalabra(primeraPal)
 
-        for varRes in varHor: #Compruebo de las siguientes variables . Seguramente pueda optimizarlo
+        for varRes in varHor[1:]: #Compruebo de las siguientes variables . Seguramente pueda optimizarlo
             if(varRes.longitud()==primerVar.longitud()): #Si la longitud es igual
                 for lista in varRes.getDominio():
                     if(lista==primeraPal):#Si la palabra es igual
@@ -95,43 +112,63 @@ def start(almacen,tablero,varHor, varVer):
 
         pos=busca(almacen,var.longitud())
         #if(pos==-1): #No se que hay que hacer si es -1
-        print(almacen[pos])
+#         print(almacen[pos])
         var.setDominio(almacen[pos].getLista())        
-        print(var.getDominio())
+#         print(var.getDominio())
         for a in range(var.coorInicio[1], var.coorFin[1]+1):
-            print("a la posicion que le toca")
-            print(a)
-            print("coorInicio variable")
-            print(var.coorInicio)
+#             print("a la posicion que le toca")
+#             print(a)
+#             print("coorInicio variable")
+#             print(var.coorInicio)
             coorBusq=(var.coorInicio[1],a)
-            print("coor siguiente")
-            print(coorBusq)
+#             print("coor siguiente")
+#             print(coorBusq)
             varY=buscarVar(varVer,coorBusq )
             print(varY)
             if(var.coorInicio[0]==-1):
                 break
-            newRestriccion=Restriccion(a,varY, var.getCoorIni()[0]) #Comprobar que esto se hace como quiero
-            print("Restriccion")
-            print (newRestriccion.getPosX())
-            print(newRestriccion.getPosY())
-            var.setRestriccion(var.getRestriccion().append(newRestriccion))
-            print("Añadida gucci")
-            #Mirar si hay alguna palabra que tenga esa letra en esa posicion
+            newRestriccion=Restriccion(var.getCoorIni()[0],varY,a ) #Comprobar que esto se hace como quiero
+#             print("Restriccion")
+#             print (newRestriccion.getPosX())
+#             print(newRestriccion.getPosY())
+            restricciones = var.getRestriccion()  # Obtener la lista actual de restricciones
+            restricciones.append(newRestriccion)  # Agregar la nueva restricción a la lista existente
+            var.setRestriccion(restricciones)  # Asignar la lista modificada de restricciones a la variable
 
+            #var.setRestriccion(var.getRestriccion().append(newRestriccion))
+#             print("Añadida gucci")
+            #Mirar si hay alguna palabra que tenga esa letra en esa posicion
+    print("VERTICALES AHORA")
     for var in varVer: #Establecemos todas las variables Verticales
 
         pos=busca(almacen,var.longitud())
         #if(pos==-1): #No se que hay que hacer si es -1
-        var.setDominio(almacen[pos][0])  #Guarda la lista de su tamaño      
-        print(var.getDominio())
+        print("pos almacen",almacen[pos])
+        dominio=almacen[pos].getLista()
+        var.setDominio(dominio)        
+        print("El dominio",var.getDominio())
         for a in range(var.coorInicio[0], var.coorFin[0]+1):
-            varX=buscarVar(varHor, var.coorInicio)
-            if(var.coorInicio[0]==-1):
+#             print("a la posicion que le toca")
+#             print(a)
+#             print("coorInicio variable")
+#             print(var.coorInicio)
+            coorBusq=(var.coorInicio[1],a)
+#             print("coor siguiente")
+#             print(coorBusq)
+            varY=buscarVar(varHor,coorBusq )
+            print("variable Y",varY)
+            if(var.coorInicio[1]==-1):
                 break
-            newRestriccion=Restriccion(a,varX, (varX.coorInicio[0]+1,varX.coorInicio[1])) #Comprobar que esto se hace como quiero
-            var.set(var.getRestriccion().append(newRestriccion))
-            #Mirar si hay alguna palabra que tenga esa letra en esa posicion
+            newRestriccion=Restriccion(a,varY,var.getCoorIni()[1]) #Comprobar que esto se hace como quiero
+#             print("Restriccion")
+#             print (newRestriccion.getPosX())
+#             print(newRestriccion.getPosY())
+            restricciones = var.getRestriccion()  # Obtener la lista actual de restricciones
+            restricciones.append(newRestriccion)  # Agregar la nueva restricción a la lista existente
+            var.setRestriccion(restricciones)  # Asignar la lista modificada de restricciones a la variable
 
+            #var.setRestriccion(var.getRestriccion().append(newRestriccion))
+#             print("Añadida gucci")
         
     fc = FC(varHor)
 
@@ -183,3 +220,4 @@ def start(almacen,tablero,varHor, varVer):
 #             j=j+1
             #else:
                 #for a in range(varHor[i].coorInicio[0], varHor[i].coorFin[0]+1):
+
