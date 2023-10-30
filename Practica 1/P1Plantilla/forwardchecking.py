@@ -111,34 +111,40 @@ def start(almacen,tablero,varHor, varVer):
     for var in varHor: #Establecemos todas las variables Horizontales
 
         pos=busca(almacen,var.longitud())
+        print("posicion del almacen", pos)
         #if(pos==-1): #No se que hay que hacer si es -1
-#         print(almacen[pos])
+        print("El almacen",almacen[pos])
+        print("La lista del almacen", almacen[pos].getLista())
         var.setDominio(almacen[pos].getLista())        
-#         print(var.getDominio())
+        #print("El dominio",var.getDominio())
         for a in range(var.coorInicio[1], var.coorFin[1]+1):
-#             print("a la posicion que le toca")
-#             print(a)
-#             print("coorInicio variable")
-#             print(var.coorInicio)
+            print("La lista del almacen", almacen[pos].getLista())
+            print("a la posicion que le toca")
+            print(a)
+            print("coorInicio variable")
+            print(var.coorInicio)
             coorBusq=(var.coorInicio[1],a)
-#             print("coor siguiente")
-#             print(coorBusq)
-            varY=buscarVar(varVer,coorBusq )
+            print("coor siguiente")
+            print(coorBusq)
+            varY=buscarVar(varVer,coorBusq)
             print(varY)
             if(var.coorInicio[0]==-1):
                 break
             newRestriccion=Restriccion(var.getCoorIni()[0],varY,a ) #Comprobar que esto se hace como quiero
-#             print("Restriccion")
-#             print (newRestriccion.getPosX())
-#             print(newRestriccion.getPosY())
+            print("Restriccion")
+            print (newRestriccion.getPosX())
+            print(newRestriccion.getPosY())
             restricciones = var.getRestriccion()  # Obtener la lista actual de restricciones
             restricciones.append(newRestriccion)  # Agregar la nueva restricción a la lista existente
             var.setRestriccion(restricciones)  # Asignar la lista modificada de restricciones a la variable
 
             #var.setRestriccion(var.getRestriccion().append(newRestriccion))
-#             print("Añadida gucci")
+            print("Añadida gucci")
+        print("Las restricciones",var.getRestriccion())
             #Mirar si hay alguna palabra que tenga esa letra en esa posicion
+    print()
     print("VERTICALES AHORA")
+    print()
     for var in varVer: #Establecemos todas las variables Verticales
 
         pos=busca(almacen,var.longitud())
@@ -146,30 +152,33 @@ def start(almacen,tablero,varHor, varVer):
         print("pos almacen",almacen[pos])
         dominio=almacen[pos].getLista()
         var.setDominio(dominio)        
-        print("El dominio",var.getDominio())
+        #print("El dominio",var.getDominio())
         for a in range(var.coorInicio[0], var.coorFin[0]+1):
-#             print("a la posicion que le toca")
-#             print(a)
-#             print("coorInicio variable")
-#             print(var.coorInicio)
-            coorBusq=(var.coorInicio[1],a)
-#             print("coor siguiente")
-#             print(coorBusq)
+            print("El dominio",var.getDominio())
+            print("a la posicion que le toca")
+            print(a)
+            print("coorInicio variable")
+            print(var.coorInicio)
+            coorBusq=(a,var.coorInicio[0])
+            print("coor siguiente")
+            print(coorBusq)
             varY=buscarVar(varHor,coorBusq )
             print("variable Y",varY)
             if(var.coorInicio[1]==-1):
                 break
-            newRestriccion=Restriccion(a,varY,var.getCoorIni()[1]) #Comprobar que esto se hace como quiero
-#             print("Restriccion")
-#             print (newRestriccion.getPosX())
-#             print(newRestriccion.getPosY())
+            newRestriccion=Restriccion(a,varY,var.getCoorIni()[0]) #Comprobar que esto se hace como quiero
+            print("Restriccion")
+            print (newRestriccion.getPosX())
+            print(newRestriccion.getPosY())
             restricciones = var.getRestriccion()  # Obtener la lista actual de restricciones
             restricciones.append(newRestriccion)  # Agregar la nueva restricción a la lista existente
             var.setRestriccion(restricciones)  # Asignar la lista modificada de restricciones a la variable
 
             #var.setRestriccion(var.getRestriccion().append(newRestriccion))
-#             print("Añadida gucci")
-        
+            print("Añadida gucci")
+        for res in var.getRestriccion():
+            print("Las restricciones",res.getY())
+            
     fc = FC(varHor)
 
 #Si todo va bn imprimimos
