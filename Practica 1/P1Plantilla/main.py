@@ -19,7 +19,7 @@ TAM=60  #tamaño de la celda
 FILS=5 # número de filas del crucigrama
 COLS=6 # número de columnas del crucigrama
 
-ID=None
+
 
 LLENA='*' 
 VACIA='-'
@@ -107,7 +107,7 @@ def imprimeAlmacen(almacen):
         print()
 
 
-def sacarVariablesHor(tablero):#DUDA: Mirar bn si reconoce las variables de 1
+def sacarVariablesHor(tablero,ID):#DUDA: Mirar bn si reconoce las variables de 1
     variables= []
     coorInicio=(0,0)
     for x in range(0, tablero.getAlto()):
@@ -128,9 +128,9 @@ def sacarVariablesHor(tablero):#DUDA: Mirar bn si reconoce las variables de 1
                 ID=ID+1
                 coorInicio=(coorInicio[0],y+1)               
     
-    return variables
+    return variables, ID
 
-def sacarVariablesVer(tablero):
+def sacarVariablesVer(tablero,ID):
     variables = []
     coorInicio = (0, 0)
 
@@ -141,18 +141,18 @@ def sacarVariablesVer(tablero):
 
             if x == tablero.getAlto() - 1:
                 if tablero.getCelda(x, y) == VACIA:
-                    variables.append(Variable(coorInicio, (x, y)))  # si donde está es vacío, tómalo en cuenta
+                    variables.append(Variable(coorInicio, (x, y),ID))  # si donde está es vacío, tómalo en cuenta
                     ID=ID+1
                 else:
-                    variables.append(Variable(coorInicio, (x - 1, y)))  # si donde está está en negro, no lo cuentes para la variable
+                    variables.append(Variable(coorInicio, (x - 1, y),ID))  # si donde está está en negro, no lo cuentes para la variable
                     ID=ID+1
 
             elif tablero.getCelda(x, y) == LLENA:
-                variables.append(Variable(coorInicio, (x - 1, y)))  # -1 porque donde estás es la casilla negra
+                variables.append(Variable(coorInicio, (x - 1, y),ID))  # -1 porque donde estás es la casilla negra
                 ID=ID+1
                 coorInicio = (x + 1, coorInicio[1])
 
-    return variables
+    return variables, ID
 
 #def sacarVariables(tablero):
     #varHor = sacarVariablesHor(tablero,)
@@ -174,6 +174,9 @@ def buscarVar(listaVar, coorInicio): #NOTA: Si es de un solo hueco mirar que lo 
             if((coorInicio[0],coorInicio[1]+1)==LLENA):
                 return Variable((-1,-1),(-1,-1))
             if(coorInicio==a.coorInicio):
+                print("buscar variable ver")
+                print(a.getCoorIni())
+                print(a.getCoorFin())
                 return a
 
 #def logFC():
@@ -199,6 +202,7 @@ def buscarVar(listaVar, coorInicio): #NOTA: Si es de un solo hueco mirar que lo 
 #########################################################################
 def main():
     global ID
+    ID = 0  # Inicializar ID aquí
     
     root= tkinter.Tk() #para eliminar la ventana de Tkinter
     root.withdraw() #se cierra
@@ -234,12 +238,18 @@ def main():
                 pos=pygame.mouse.get_pos()                
                 if pulsaBotonFC(pos, anchoVentana, altoVentana):
                     print("FC")
-                    varHor= sacarVariablesHor(tablero)
+                    varHor,ID= sacarVariablesHor(tablero,ID)
+                    varVer,ID=sacarVariablesVer(tablero,ID)
                     for i in varHor:
                         print(i.coorInicio)
                         print(i.longitud())
+                        print(i.getNombre())
+                    for i in varVer:
+                        print(i.coorInicio)
+                        print(i.longitud())
+                        print(i.getNombre())
                         
-                    uwu=start(almacen,tablero,varHor)
+                    uwu=start(almacen,tablero,varHor,varVer)
                         
                     res=False #aquí llamar al forward checking
                     if res==False:

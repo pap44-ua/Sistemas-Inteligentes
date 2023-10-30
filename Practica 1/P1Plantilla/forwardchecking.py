@@ -1,5 +1,5 @@
 from main import *
-from main import busca
+
 from tablero import *
 from dominio import *
 from variable import *
@@ -95,14 +95,27 @@ def start(almacen,tablero,varHor, varVer):
 
         pos=busca(almacen,var.longitud())
         #if(pos==-1): #No se que hay que hacer si es -1
-        var.setDominio(almacen[pos][0])        
+        print(almacen[pos])
+        var.setDominio(almacen[pos].getLista())        
         print(var.getDominio())
-        for a in range(var.coorInicio[0], var.coorFin[0]+1):
-            varY=buscarVar(varVer, var.coorInicio)
+        for a in range(var.coorInicio[1], var.coorFin[1]+1):
+            print("a la posicion que le toca")
+            print(a)
+            print("coorInicio variable")
+            print(var.coorInicio)
+            coorBusq=(var.coorInicio[1],a)
+            print("coor siguiente")
+            print(coorBusq)
+            varY=buscarVar(varVer,coorBusq )
+            print(varY)
             if(var.coorInicio[0]==-1):
                 break
-            newRestriccion=Restriccion(a,varY, (varY.coorInicio[0]+1,varY.coorInicio[1])) #Comprobar que esto se hace como quiero
-            var.set(var.getRestriccion().append(newRestriccion))
+            newRestriccion=Restriccion(a,varY, var.getCoorIni()[0]) #Comprobar que esto se hace como quiero
+            print("Restriccion")
+            print (newRestriccion.getPosX())
+            print(newRestriccion.getPosY())
+            var.setRestriccion(var.getRestriccion().append(newRestriccion))
+            print("Añadida gucci")
             #Mirar si hay alguna palabra que tenga esa letra en esa posicion
 
     for var in varVer: #Establecemos todas las variables Verticales
@@ -111,7 +124,7 @@ def start(almacen,tablero,varHor, varVer):
         #if(pos==-1): #No se que hay que hacer si es -1
         var.setDominio(almacen[pos][0])  #Guarda la lista de su tamaño      
         print(var.getDominio())
-        for a in range(var.coorInicio[1], var.coorFin[1]+1):
+        for a in range(var.coorInicio[0], var.coorFin[0]+1):
             varX=buscarVar(varHor, var.coorInicio)
             if(var.coorInicio[0]==-1):
                 break

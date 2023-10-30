@@ -11,9 +11,15 @@ class Variable:
         self.restriccion=[]
     
     def horizontal (self):
-        if (self.coorInicio[0]- self.coorFin[0])==0:
+        dif_x = abs(self.coorInicio[0] - self.coorFin[0])  # Diferencia en el eje x
+        dif_y = abs(self.coorInicio[1] - self.coorFin[1])  # Diferencia en el eje y
+
+        # Si la diferencia en el eje x es 0 y la diferencia en el eje y es mayor que 0, entonces es horizontal
+        if dif_x == 0 and dif_y > 0:
             return True
-        return False
+        # Si la diferencia en el eje y es 0 y la diferencia en el eje x es mayor que 0, entonces es vertical
+        elif dif_y == 0 and dif_x > 0:
+            return False
     
     def longitud (self):
         if(self.horizontal()):
