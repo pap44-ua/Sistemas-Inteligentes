@@ -9,8 +9,17 @@ from restriccion import *
 
 
 
-def restaura(borrados,):
+def restaura(var,borrados):
     print("restaura")
+    #Si el dominio de la restriccion Y se queda vacio hacemos esto
+    #Borramos de la variable Y
+    for elemento in borrados:
+        if var.getNombre() == elemento[1]:
+            var.getResctriccion().getVarY().setDominio(var.getResctriccion().getVarY().getDominio().append(elemento[0]))
+    #Borramos de la variable X
+    var.setDominio(var.getDominio().remove(var.getPalabra()))
+    
+        
 
 
 
@@ -22,7 +31,7 @@ def forward(var,borradas):
             dominio = res.getY().getDominio().copy()
             for dom in dominio:
                 if(dom[res.getPosY()]!=var.getNombre(res.getPosX())):
-                    borradas.append((dom,res.getY().getNombre()))   #AQUI TENGO QUE GUARDAR QN LA BORRA
+                    borradas.append((dom,var.getNombre()))   #AQUI TENGO QUE GUARDAR QN LA BORRA
                     res.getY().setDominio(res.getY().getDominio().remove(dom))
                 if not res.getY().getDominio(): #Si la lista esta vacia se sale
                     return False
@@ -33,10 +42,12 @@ def forward(var,borradas):
 
 def FC(varHor):
 
+    aux = 0
     borradas=[] #Tula de (palabra borrada , ID de quien lo ha borrado)
 
 
-    for index, var in enumerate(varHor):
+    for  var in varHor:
+        aux = aux +1 #La primera variable seria 1
         primerVar=var
         primeraPal=primerVar.getDominio()[0]
         primerVar.setDominio(primerVar.getDominio().pop(0))
@@ -53,12 +64,20 @@ def FC(varHor):
         #restaura i
         if var == varHor[-1]:
             return True
-        if forward(var):
-            print(f"si FC(i+1) retorna cierto")
+        if forward(var,borradas):
             if(FC(varHor[1:])):
                 return True
-        rest=restaura()
+        rest=restaura(var,borradas)
             
+        if not var.getDominio():
+            var.setPalabra(var.getDominio()[0])#Si no tiene dominio a lo mejor da error
+            break
+        elif aux ==1: #Si es la primera variable
+            var.setDominio(var.getDominio().remove(var.getPalabra()))
+            print("Solo te queda esto")
+            #var.setPalabra()
+        else:
+            return False
     return False
        
     #Recorrer el dominio de una variable

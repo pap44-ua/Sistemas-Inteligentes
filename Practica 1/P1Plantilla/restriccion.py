@@ -12,5 +12,8 @@ class Restriccion:
     def getY(self):
         return self.varY
     
+    def setY(self, varY):
+        self.varY = varY
+    
     def getPosY(self):
         return self.coorY
