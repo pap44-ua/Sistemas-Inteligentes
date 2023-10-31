@@ -164,9 +164,9 @@ def start(almacen,tablero,varHor, varVer):
             print(coorBusq)
             varY=buscarVar(varHor,coorBusq )
             print("variable Y",varY)
-            if(var.coorInicio[1]==-1):
+            if(var.coorInicio[0]==-1):
                 break
-            newRestriccion=Restriccion(a,varY,var.getCoorIni()[0]) #Comprobar que esto se hace como quiero
+            newRestriccion=Restriccion(a,varY,var.getCoorIni()[1]) #Comprobar que esto se hace como quiero
             print("Restriccion")
             print (newRestriccion.getPosX())
             print(newRestriccion.getPosY())

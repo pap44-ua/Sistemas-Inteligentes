@@ -108,50 +108,49 @@ def imprimeAlmacen(almacen):
 
 
 def sacarVariablesHor(tablero,ID):#DUDA: Mirar bn si reconoce las variables de 1
+    #X columna
+    #Y fila
     variables= []
     coorInicio=(0,0)
-    for x in range(0, tablero.getAlto()):
-        coorInicio=(x,0)
-        for y in range( 0, tablero.getAncho()):
-            coorInicio = (x , coorInicio[1]) #Va actualizando la coorInicio, solo cambiará cuando se encuentre con una casilla negra
+    for fila in range(0, tablero.getAlto()):
+        coorInicio=(fila,0)
+        for col in range( 0, tablero.getAncho()):
+            coorInicio = (fila , coorInicio[1]) #Va actualizando la coorInicio, solo cambiará cuando se encuentre con una casilla negra
             
-            if(y== tablero.getAncho()-1):
-                if(tablero.getCelda(x,y)==VACIA):
-                    variables.append(Variable((coorInicio),(x,y),ID))
-                    ID=ID+1#si donde esta es vacio que lo tenga en cuenta
-                else:
-                    variables.append(Variable((coorInicio),(x,y-1),ID))#si donde esta esta en negro que no la cuente para la variable
-                    ID=ID+1
+            if(col== tablero.getAncho()-1):
+                variables.append(Variable((coorInicio),(fila,col),ID))
+                ID=ID+1#si donde esta es vacio que lo tenga en cuenta
+                
+                    
 
-            elif(tablero.getCelda(x,y)==LLENA):#error aqui
-                variables.append(Variable((coorInicio),(x,y-1)))#-1 pq dnd estas es la casilla negra
+            elif(tablero.getCelda(fila,col)==LLENA):#error aqui
+                variables.append(Variable((coorInicio),(fila,col-1),ID))#si donde esta esta en negro que no la cuente para la variable
                 ID=ID+1
-                coorInicio=(coorInicio[0],y+1)               
+                coorInicio=(coorInicio[0],col+1)               
     
     return variables, ID
 
 def sacarVariablesVer(tablero,ID):
-    variables = []
-    coorInicio = (0, 0)
+    #X columna
+    #Y fila
+    variables= []
+    coorInicio=(0,0)
+    for col in range(0, tablero.getAncho()):
+        coorInicio=(0,col)
+        for fil in range( 0, tablero.getAlto()):
+            coorInicio = (coorInicio[0],col) #Va actualizando la coorInicio, solo cambiará cuando se encuentre con una casilla negra
+            
+            if(fil== tablero.getAlto()-1):
+                variables.append(Variable((coorInicio),(fil,col),ID))
+                ID=ID+1#si donde esta es vacio que lo tenga en cuenta
+                
+                    
 
-    for y in range(tablero.getAncho()):
-        coorInicio = (0, y)
-        for x in range(tablero.getAlto()):
-            coorInicio = (coorInicio[0], y)  # Va actualizando la coorInicio, solo cambiará cuando se encuentre con una casilla negra
-
-            if x == tablero.getAlto() - 1:
-                if tablero.getCelda(x, y) == VACIA:
-                    variables.append(Variable(coorInicio, (x, y),ID))  # si donde está es vacío, tómalo en cuenta
-                    ID=ID+1
-                else:
-                    variables.append(Variable(coorInicio, (x - 1, y),ID))  # si donde está está en negro, no lo cuentes para la variable
-                    ID=ID+1
-
-            elif tablero.getCelda(x, y) == LLENA:
-                variables.append(Variable(coorInicio, (x - 1, y),ID))  # -1 porque donde estás es la casilla negra
+            elif(tablero.getCelda(fil,col)==LLENA):#error aqui
+                variables.append(Variable((coorInicio),(fil-1,col),ID))#si donde esta esta en negro que no la cuente para la variable
                 ID=ID+1
-                coorInicio = (x + 1, coorInicio[1])
-
+                coorInicio=(fil+1,coorInicio[1])               
+    
     return variables, ID
 
 #def sacarVariables(tablero):
@@ -241,10 +240,13 @@ def main():
                     varHor,ID= sacarVariablesHor(tablero,ID)
                     varVer,ID=sacarVariablesVer(tablero,ID)
                     for i in varHor:
+                        print("HORIZONTAL")
                         print(i.coorInicio)
+                        print(i.coorFin)
                         print(i.longitud())
                         print(i.getNombre())
                     for i in varVer:
+                        print("VERTICAL")
                         print(i.coorInicio)
                         print(i.longitud())
                         print(i.getNombre())

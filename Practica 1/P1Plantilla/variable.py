@@ -11,20 +11,14 @@ class Variable:
         self.restriccion=[]
     
     def horizontal (self):
-        dif_x = abs(self.coorInicio[0] - self.coorFin[0])  # Diferencia en el eje x
-        dif_y = abs(self.coorInicio[1] - self.coorFin[1])  # Diferencia en el eje y
-
-        # Si la diferencia en el eje x es 0 y la diferencia en el eje y es mayor que 0, entonces es horizontal
-        if dif_x == 0 and dif_y > 0:
+        if (self.coorInicio[0]- self.coorFin[0])==0:
             return True
-        # Si la diferencia en el eje y es 0 y la diferencia en el eje x es mayor que 0, entonces es vertical
-        elif dif_y == 0 and dif_x > 0:
-            return False
+        return False
     
     def longitud (self):
         if(self.horizontal()):
-            return  (self.coorFin[1]+1)-self.coorInicio[1]
-        return (self.coorFin[0]+1) - self.coorInicio[0]
+            return  self.coorFin[1]-self.coorInicio[1]+1
+        return self.coorFin[0] - self.coorInicio[0]+1
     
     def getDominio(self):
         return self.dominio
