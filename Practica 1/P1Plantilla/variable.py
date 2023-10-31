@@ -42,8 +42,8 @@ class Variable:
         self.nombre=nombre
     def getNombre(self):
         return self.nombre
-    def setPalabra(self, nombre):
-        self.nombre=nombre
+    def setPalabra(self, palabra):
+        self.palabra=palabra
     def getPalabra(self):
         return self.palabra
     
