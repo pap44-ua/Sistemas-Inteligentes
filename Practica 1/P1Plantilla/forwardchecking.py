@@ -9,9 +9,9 @@ from restriccion import *
 
 
 
-def restaura(var,borrados): #Me da error pq no se asigna una variable
+def restaura(var): #Me da error pq no se asigna una variable
     aux=0
-    
+    borrados=var.getBorradas()
     print()
     print("restaura")
     print()
@@ -21,14 +21,14 @@ def restaura(var,borrados): #Me da error pq no se asigna una variable
     for elemento in borrados:
         if var.getNombre() == elemento[1]:
             restriccion=var.getRestriccion()[aux].getY().getDominio()
-            print("La restriccion de la variable: ", var.getRestriccion()[aux])
-            print("La variable y de la restriccion de la variable: ", var.getRestriccion()[aux].getY())
-            print("Posicion Inicio varY: ", var.getRestriccion()[aux].getY().getCoorIni())
-            #print("El dominio de la variable y de la restriccion de la variable: ", var.getRestriccion()[aux].getY())
-            print()
-            print("La restriccion completa: ", restriccion)
-            print("El elemento: ", elemento)
-            print("La parte izq: ", elemento[0])
+#             print("La restriccion de la variable: ", var.getRestriccion()[aux])
+#             print("La variable y de la restriccion de la variable: ", var.getRestriccion()[aux].getY())
+#             print("Posicion Inicio varY: ", var.getRestriccion()[aux].getY().getCoorIni())
+#             #print("El dominio de la variable y de la restriccion de la variable: ", var.getRestriccion()[aux].getY())
+#             print()
+#             print("La restriccion completa: ", restriccion)
+#             print("El elemento: ", elemento)
+#             print("La parte izq: ", elemento[0])
             restriccion.append(elemento[0])
             var.getRestriccion()[aux].getY().setDominio(restriccion)
             
@@ -69,13 +69,13 @@ def forward(var,borradas):
     #Hasta aqui C4 parte 1
 
 
-def FC(varHor, varVer):
+def FC(variables):
 
     aux = 0
     borradas=[] #Tula de (palabra borrada , ID de quien lo ha borrado)
 
-    print("Variable horizontal",varHor)
-    for  var in varHor:
+ 
+    for  var in variables:
         aux = aux +1 #La primera variable seria 1
         primerVar=var
         print("La primera variable: ",primerVar.getCoorIni())
@@ -88,7 +88,7 @@ def FC(varHor, varVer):
         var.borradas.append((primeraPal,var.getNombre()))
 
         print("LO QUE DEBERIA SALIR ", dominio)
-        primerVar.setDominio(dominio)
+        
         primerVar.setPalabra(primeraPal)
         
         
@@ -96,31 +96,29 @@ def FC(varHor, varVer):
         print("Palabra asignada: ", primerVar.getPalabra())
         print("Nuevo dominio asignado: ", primerVar.getDominio())
         print()
-    print("Variable vertical",varVer)
-    for  var in varVer:
-        print()
-        print ("AAAAAAAAAAAA")
         
-    
-        primerVar=var
-        print("La primera variable: ",primerVar.getCoorIni())
-        print("La primera variable: ",primerVar.getCoorFin())
-        print("Dominio asignado: ", primerVar.getDominio()) 
-        primeraPal=primerVar.getDominio()[0]
-        print("La primera palabra", primeraPal)
-        dominio = var.getDominio()  # Obten la lista de dominio
-        dominio.remove(primeraPal)  # Elimina 'primeraPal' de la lista 'dominio'
-        var.borradas.append((primeraPal,var.getNombre()))
-
-        print("LO QUE DEBERIA SALIR ", dominio)
-        primerVar.setDominio(dominio)
-        primerVar.setPalabra(primeraPal)
+        if var == variables[-1]:
+            return True
+        if forward(var,borradas):
+            if(FC(variables[1:])):
+                return True
+        rest=restaura(var,borradas)
+            
+        if  var.getDominio():
+            domi= var.getDominio()[0]
+            print("DOMIIIIIIIII", domi)
+            var.setPalabra(domi)#Si no tiene dominio a lo mejor da error
+            break
+        elif aux !=1: #Si no es la primera variable
+            
+            if ()
+            var.getDominio().append()
+            print("Solo te queda esto")
+            #var.setPalabra()
+        else:
+            return False
+    return False
         
-        
-        
-        print("Palabra asignada: ", primerVar.getPalabra())
-        print("Nuevo dominio asignado: ", primerVar.getDominio())
-        print()
         
         
        
@@ -142,23 +140,8 @@ def FC(varHor, varVer):
         #Si forward(i,a)
             #si FC(i+1) return true
         #restaura i
-        if var == varHor[-1]:
-            return True
-        if forward(var,borradas):
-            if(FC(varHor[1:])):
-                return True
-        rest=restaura(var,borradas)
-            
-        if not var.getDominio():
-            var.setPalabra(var.getDominio()[0])#Si no tiene dominio a lo mejor da error
-            break
-        elif aux ==1: #Si es la primera variable
-            var.setDominio(var.getDominio().remove(var.getPalabra()))
-            print("Solo te queda esto")
-            #var.setPalabra()
-        else:
-            return False
-    return False
+    
+   
        
     #Recorrer el dominio de una variable
 
@@ -242,14 +225,18 @@ def start(almacen,tablero,varHor, varVer):
 #             print("Añadida gucci")
 #         for res in var.getRestriccion():
 #             print("Las restricciones",res.getY())
+    variables = []
+    variables.extend(varHor)
+    variables.extend(varVer)
             
-    fc = FC(varHor,varVer)
+    fc = FC(variables)
 
 #Si todo va bn imprimimos
-    for var in varHor:
-        for pos in range(var.getCoorIni(),var.getCoorFin()):
-            for letra in var.getPalabra():
-                Tablero.setCelda(pos[0],pos[1],letra)
+    for var in variables:
+        for pos in range(var.getCoorIni()[0],var.getCoorFin()[0]):
+            for pos in range(var.getCoorIni()[1],var.getCoorFin()[1]):
+                for letra in var.getPalabra():
+                    Tablero.setCelda(pos[0],pos[1],letra)
 
     #Sacamos la primera palabra
     return fc

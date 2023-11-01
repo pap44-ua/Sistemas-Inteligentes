@@ -166,6 +166,9 @@ def buscarVar(listaVar, coorInicio): #NOTA: Si es de un solo hueco mirar que lo 
             if((coorInicio[0]+1,coorInicio[1])==LLENA):
                 return Variable((-1,-1),(-1,-1))
             if(coorInicio==a.coorInicio):
+                print("buscar variable hor")
+                print(a.getCoorIni())
+                print(a.getCoorFin())
                 return a
             
     else:
@@ -173,9 +176,9 @@ def buscarVar(listaVar, coorInicio): #NOTA: Si es de un solo hueco mirar que lo 
             if((coorInicio[0],coorInicio[1]+1)==LLENA):
                 return Variable((-1,-1),(-1,-1))
             if(coorInicio==a.coorInicio):
-#                 print("buscar variable ver")
-#                 print(a.getCoorIni())
-#                 print(a.getCoorFin())
+                print("buscar variable ver")
+                print(a.getCoorIni())
+                print(a.getCoorFin())
                 return a
 
 #def logFC():
@@ -239,6 +242,7 @@ def main():
                     print("FC")
                     varHor,ID= sacarVariablesHor(tablero,ID)
                     varVer,ID=sacarVariablesVer(tablero,ID)
+                    
                     for i in varHor:
                         print("HORIZONTAL")
                         print(i.coorInicio)
