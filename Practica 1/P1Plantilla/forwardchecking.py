@@ -69,22 +69,30 @@ def FC(varHor):
         print("La primera variable: ",primerVar.getCoorIni())
         print("Dominio asignado: ", primerVar.getDominio()) 
         primeraPal=primerVar.getDominio()[0]
-        primerVar.setDominio(primerVar.getDominio().pop(0))
+        print("La primera palabra", primeraPal)
+        dominio = var.getDominio()  # Obten la lista de dominio
+        dominio.remove(primeraPal)  # Elimina 'primeraPal' de la lista 'dominio'
+
+        print("LO QUE DEBERIA SALIR ", dominio)
+        primerVar.setDominio(dominio)
         primerVar.setPalabra(primeraPal)
         
         
-        print("La primera palabra", primeraPal)
+        
         print("Palabra asignada: ", primerVar.getPalabra())
         print("Nuevo dominio asignado: ", primerVar.getDominio())
         
         for varRes in varHor[1:]: #Compruebo de las siguientes variables . Seguramente pueda optimizarlo
             if(varRes.longitud()==primerVar.longitud()): #Si la longitud es igual
+                
                 for lista in varRes.getDominio():
                     if(lista==primeraPal):#Si la palabra es igual
                         varRes.setDominio(varRes.getDominio().pop(0)) #La saco de la variable
-            for res in varRes.getRestriccion():
-                print("Variable: ", varRes.getNombre())
-                print("Restriccion en X: ",res.getPosX()," y en la pos Y: ", res.getPosY()) 
+#             for res in varRes.getRestriccion():
+#                 print("Variable: ", varRes.getNombre())
+#                 print("Restriccion en X: ",res.getPosX()," y en la pos Y: ", res.getPosY())
+                
+        print ("Terminao")            
         
         #Si forward(i,a)
             #si FC(i+1) return true
