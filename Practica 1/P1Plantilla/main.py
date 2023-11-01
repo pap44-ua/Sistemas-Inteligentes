@@ -173,9 +173,9 @@ def buscarVar(listaVar, coorInicio): #NOTA: Si es de un solo hueco mirar que lo 
             if((coorInicio[0],coorInicio[1]+1)==LLENA):
                 return Variable((-1,-1),(-1,-1))
             if(coorInicio==a.coorInicio):
-                print("buscar variable ver")
-                print(a.getCoorIni())
-                print(a.getCoorFin())
+#                 print("buscar variable ver")
+#                 print(a.getCoorIni())
+#                 print(a.getCoorFin())
                 return a
 
 #def logFC():

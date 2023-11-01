@@ -34,22 +34,34 @@ def restaura(var,borrados): #Me da error pq no se asigna una variable
             
         aux=aux+1
     #Borramos de la variable X
-    var.setDominio(var.getDominio().remove(var.getPalabra()))
+        domi=var.getDominio()
+        domi.remove(var.getPalabra())
+   
     
         
 
 
 
 def forward(var,borradas):
+    print
     print("forward")
-
-    for res in var.restriccion : #C3
+    print(var.getRestriccion())
+    for res in var.getRestriccion() : #C3
+        
             #if(var.getNombre()[res.getPosX()]==res.getVarY().getNombre()[res.getPosY()]):
             dominio = res.getY().getDominio().copy()
+            print(dominio)
             for dom in dominio:
-                if(dom[res.getPosY()]!=var.getNombre()):
-                    borradas.append((dom,var.getNombre()))   #AQUI TENGO QUE GUARDAR QN LA BORRA
-                    res.getY().setDominio(res.getY().getDominio().remove(dom))
+                if(dom[res.getPosY()]!=var.getPalabra()[res.getPosX()]):
+                    res.getY().getBorradas().append((dom,var.getNombre()))
+                    print(res.getPosY())
+                    print(res.getPosX())
+                    
+                    domi=res.getY().getDominio()#AQUI TENGO QUE GUARDAR QN LA BORRA
+                    domi.remove(dom)
+                    print("Dominio que se queda: ", res.getY().getDominio())
+                    print("Lista de borradas: ", res.getY().getBorradas())
+#                     res.getY().setDominio(domi)
                 if not res.getY().getDominio(): #Si la lista esta vacia se sale
                     return False
                     
@@ -57,7 +69,7 @@ def forward(var,borradas):
     #Hasta aqui C4 parte 1
 
 
-def FC(varHor):
+def FC(varHor, varVer):
 
     aux = 0
     borradas=[] #Tula de (palabra borrada , ID de quien lo ha borrado)
@@ -67,11 +79,13 @@ def FC(varHor):
         aux = aux +1 #La primera variable seria 1
         primerVar=var
         print("La primera variable: ",primerVar.getCoorIni())
+        print("La primera variable: ",primerVar.getCoorFin())
         print("Dominio asignado: ", primerVar.getDominio()) 
         primeraPal=primerVar.getDominio()[0]
         print("La primera palabra", primeraPal)
         dominio = var.getDominio()  # Obten la lista de dominio
         dominio.remove(primeraPal)  # Elimina 'primeraPal' de la lista 'dominio'
+        var.borradas.append((primeraPal,var.getNombre()))
 
         print("LO QUE DEBERIA SALIR ", dominio)
         primerVar.setDominio(dominio)
@@ -81,18 +95,49 @@ def FC(varHor):
         
         print("Palabra asignada: ", primerVar.getPalabra())
         print("Nuevo dominio asignado: ", primerVar.getDominio())
+        print()
+    print("Variable vertical",varVer)
+    for  var in varVer:
+        print()
+        print ("AAAAAAAAAAAA")
         
-        for varRes in varHor[1:]: #Compruebo de las siguientes variables . Seguramente pueda optimizarlo
-            if(varRes.longitud()==primerVar.longitud()): #Si la longitud es igual
-                
-                for lista in varRes.getDominio():
-                    if(lista==primeraPal):#Si la palabra es igual
-                        varRes.setDominio(varRes.getDominio().pop(0)) #La saco de la variable
+    
+        primerVar=var
+        print("La primera variable: ",primerVar.getCoorIni())
+        print("La primera variable: ",primerVar.getCoorFin())
+        print("Dominio asignado: ", primerVar.getDominio()) 
+        primeraPal=primerVar.getDominio()[0]
+        print("La primera palabra", primeraPal)
+        dominio = var.getDominio()  # Obten la lista de dominio
+        dominio.remove(primeraPal)  # Elimina 'primeraPal' de la lista 'dominio'
+        var.borradas.append((primeraPal,var.getNombre()))
+
+        print("LO QUE DEBERIA SALIR ", dominio)
+        primerVar.setDominio(dominio)
+        primerVar.setPalabra(primeraPal)
+        
+        
+        
+        print("Palabra asignada: ", primerVar.getPalabra())
+        print("Nuevo dominio asignado: ", primerVar.getDominio())
+        print()
+        
+        
+       
+        
+        
+#         for varRes in varHor: #Compruebo de las siguientes variables . Seguramente pueda optimizarlo
+#             if(varRes.longitud()==primerVar.longitud()): #Si la longitud es igual
+#                 
+#                 for lista in varRes.getDominio():
+#                     if(lista==primeraPal):#Si la palabra es igual
+#                         domi=varRes.getDominio()
+#                         domi.pop(0)
+#                         varRes.setDominio(domi) #La saco de la variable
 #             for res in varRes.getRestriccion():
 #                 print("Variable: ", varRes.getNombre())
 #                 print("Restriccion en X: ",res.getPosX()," y en la pos Y: ", res.getPosY())
-                
-        print ("Terminao")            
+                          
         
         #Si forward(i,a)
             #si FC(i+1) return true
@@ -145,24 +190,25 @@ def start(almacen,tablero,varHor, varVer):
 #             print("coor siguiente")
 #             print(coorBusq)
             varY=buscarVar(varVer,coorBusq)
-            print(varY)
+#             print(varY)
             if(var.coorInicio[0]==-1):
                 break
             newRestriccion=Restriccion(var.getCoorIni()[0],varY,a ) #Comprobar que esto se hace como quiero
+#             print()
 #             print("Restriccion")
 #             print (newRestriccion.getPosX())
 #             print(newRestriccion.getPosY())
+#             print ("Var Y")
+#             print(newRestriccion.getY())
+#             print(newRestriccion.getY().getDominio())
+#     
+#             print()
             restricciones = var.getRestriccion()  # Obtener la lista actual de restricciones
             restricciones.append(newRestriccion)  # Agregar la nueva restricción a la lista existente
-            var.setRestriccion(restricciones)  # Asignar la lista modificada de restricciones a la variable
+#             var.setRestriccion(restricciones)  # Asignar la lista modificada de restricciones a la variable
 
             #var.setRestriccion(var.getRestriccion().append(newRestriccion))
-#             print("Añadida gucci")
-#         print("Las restricciones",var.getRestriccion())
-            #Mirar si hay alguna palabra que tenga esa letra en esa posicion
-#     print()
-#     print("VERTICALES AHORA")
-#     print()
+#             
     for var in varVer: #Establecemos todas las variables Verticales
 
         pos=busca(almacen,var.longitud())
@@ -197,7 +243,7 @@ def start(almacen,tablero,varHor, varVer):
 #         for res in var.getRestriccion():
 #             print("Las restricciones",res.getY())
             
-    fc = FC(varHor)
+    fc = FC(varHor,varVer)
 
 #Si todo va bn imprimimos
     for var in varHor:

@@ -9,6 +9,7 @@ class Variable:
         self.nombre=nombre
         self.palabra=""
         self.restriccion=[]
+        self.borradas=[]
     
     def horizontal (self):
         if (self.coorInicio[0]- self.coorFin[0])==0:
@@ -52,5 +53,8 @@ class Variable:
     
     def getCoorFin(self):
         return self.coorFin
-        
+    def setBorradas(self, borradas):
+        self.borradas=borradas
+    def getBorradas(self):
+        return self.borradas
         
