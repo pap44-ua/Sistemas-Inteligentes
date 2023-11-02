@@ -11,38 +11,35 @@ from restriccion import *
 
 def restaura(var): #Me da error pq no se asigna una variable
     aux=0
-    borrados=var.getBorradas()
+    
     print()
     print("restaura")
     print()
     print()
     #Si el dominio de la restriccion Y se queda vacio hacemos esto
     #Borramos de la variable Y
-    for elemento in borrados:
-        if var.getNombre() == elemento[1]:
-            restriccion=var.getRestriccion()[aux].getY().getDominio()
-#             print("La restriccion de la variable: ", var.getRestriccion()[aux])
-#             print("La variable y de la restriccion de la variable: ", var.getRestriccion()[aux].getY())
-#             print("Posicion Inicio varY: ", var.getRestriccion()[aux].getY().getCoorIni())
-#             #print("El dominio de la variable y de la restriccion de la variable: ", var.getRestriccion()[aux].getY())
-#             print()
-#             print("La restriccion completa: ", restriccion)
-#             print("El elemento: ", elemento)
-#             print("La parte izq: ", elemento[0])
-            restriccion.append(elemento[0])
-            var.getRestriccion()[aux].getY().setDominio(restriccion)
+    for res in var.getRestriccion():
+        elementos=res.getY().getBorradas().copy()
+        for elemento in elementos:
+            if var.getNombre() == elemento[1]:
+                print("ANTES:", res.getY().getDominio())
+                res.getY().getDominio().append(elemento[0])
+                res.getY().getBorradas().remove(elemento)
+                print("DESPUES:", res.getY().getDominio())
+#                 restriccion=var.getRestriccion()[aux].getY().getDominio()
+#                 restriccion.append(elemento[0])
+#                 var.getRestriccion()[aux].getY().setDominio(restriccion)
             
         aux=aux+1
     #Borramos de la variable X
-        domi=var.getDominio()
-        domi.remove(var.getPalabra())
-   
+        domi=var.setPalabra("")
+    
     
         
 
 
 
-def forward(var,borradas):
+def forward(var):
     print
     print("forward")
     print(var.getRestriccion())
@@ -54,16 +51,16 @@ def forward(var,borradas):
             for dom in dominio:
                 if(dom[res.getPosY()]!=var.getPalabra()[res.getPosX()]):
                     res.getY().getBorradas().append((dom,var.getNombre()))
-                    print(res.getPosY())
-                    print(res.getPosX())
                     
+                    print(res.getPosX())
+                    print(res.getPosY())
                     domi=res.getY().getDominio()#AQUI TENGO QUE GUARDAR QN LA BORRA
                     domi.remove(dom)
                     print("Dominio que se queda: ", res.getY().getDominio())
                     print("Lista de borradas: ", res.getY().getBorradas())
 #                     res.getY().setDominio(domi)
-                if not res.getY().getDominio(): #Si la lista esta vacia se sale
-                    return False
+            if not res.getY().getDominio(): #Si la lista esta vacia se sale
+                return False
                     
     return True
     #Hasta aqui C4 parte 1
@@ -73,19 +70,16 @@ def FC(variables):
 
     aux = 0
     borradas=[] #Tula de (palabra borrada , ID de quien lo ha borrado)
-
- 
-    for  var in variables:
+    primerVar=variables[0]
+    dominio=variables[0].getDominio().copy()
+    for  primeraPal in dominio:
         aux = aux +1 #La primera variable seria 1
-        primerVar=var
         print("La primera variable: ",primerVar.getCoorIni())
         print("La primera variable: ",primerVar.getCoorFin())
         print("Dominio asignado: ", primerVar.getDominio()) 
-        primeraPal=primerVar.getDominio()[0]
         print("La primera palabra", primeraPal)
-        dominio = var.getDominio()  # Obten la lista de dominio
-        dominio.remove(primeraPal)  # Elimina 'primeraPal' de la lista 'dominio'
-        var.borradas.append((primeraPal,var.getNombre()))
+        
+       # Elimina 'primeraPal' de la lista 'dominio'
 
         print("LO QUE DEBERIA SALIR ", dominio)
         
@@ -97,26 +91,21 @@ def FC(variables):
         print("Nuevo dominio asignado: ", primerVar.getDominio())
         print()
         
-        if var == variables[-1]:
+        if primerVar == variables[-1]:
             return True
-        if forward(var,borradas):
+        if forward(primerVar):
             if(FC(variables[1:])):
                 return True
-        rest=restaura(var,borradas)
-            
-        if  var.getDominio():
-            domi= var.getDominio()[0]
-            print("DOMIIIIIIIII", domi)
-            var.setPalabra(domi)#Si no tiene dominio a lo mejor da error
-            break
-        elif aux !=1: #Si no es la primera variable
-            
-            if ()
-            var.getDominio().append()
-            print("Solo te queda esto")
-            #var.setPalabra()
         else:
-            return False
+            rest=restaura(primerVar)
+            dominioo = primerVar.getDominio()  # Obten la lista de dominio
+            dominioo.remove(primeraPal)
+            primerVar.getBorradasFC().append(primeraPal)
+    
+        
+    if aux !=1: #Si no es la primera variable    
+        primerVar.setDominio(primerVar.getBorradas())
+        
     return False
         
         
@@ -176,14 +165,20 @@ def start(almacen,tablero,varHor, varVer):
 #             print(varY)
             if(var.coorInicio[0]==-1):
                 break
-            newRestriccion=Restriccion(var.getCoorIni()[0],varY,a ) #Comprobar que esto se hace como quiero
-#             print()
-#             print("Restriccion")
-#             print (newRestriccion.getPosX())
-#             print(newRestriccion.getPosY())
-#             print ("Var Y")
-#             print(newRestriccion.getY())
-#             print(newRestriccion.getY().getDominio())
+            newRestriccion=Restriccion(a,varY,var.getCoorIni()[0] ) #Comprobar que esto se hace como quiero
+            
+            
+            print()
+            print("HORIZONTAL")
+            print("NOMBRE:", var.getNombre())
+            print("Restriccion")
+            print (newRestriccion.getPosX())
+            print("NOMBRE:", newRestriccion.getY().getNombre())
+            print(newRestriccion.getPosY())
+            print ("Var Y")
+            print(newRestriccion.getY())
+            print(newRestriccion.getY().getDominio())
+            
 #     
 #             print()
             restricciones = var.getRestriccion()  # Obtener la lista actual de restricciones
@@ -220,7 +215,16 @@ def start(almacen,tablero,varHor, varVer):
             restricciones = var.getRestriccion()  # Obtener la lista actual de restricciones
             restricciones.append(newRestriccion)  # Agregar la nueva restricción a la lista existente
             var.setRestriccion(restricciones)  # Asignar la lista modificada de restricciones a la variable
-
+            print()
+            print("VERTICAL")
+            print("NOMBRE:", var.getNombre())
+            print("Restriccion")
+            print (newRestriccion.getPosX())
+            print("NOMBRE:", newRestriccion.getY().getNombre())
+            print(newRestriccion.getPosY())
+            print ("Var Y")
+            print(newRestriccion.getY())
+            print(newRestriccion.getY().getDominio())
             #var.setRestriccion(var.getRestriccion().append(newRestriccion))
 #             print("Añadida gucci")
 #         for res in var.getRestriccion():

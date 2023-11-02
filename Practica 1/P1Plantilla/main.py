@@ -153,9 +153,7 @@ def sacarVariablesVer(tablero,ID):
     
     return variables, ID
 
-#def sacarVariables(tablero):
-    #varHor = sacarVariablesHor(tablero,)
-    #varVer = sacarVariablesVer(tablero,)
+
 
 #Busca en la lista que quiero la variable que tenga esa coordenada de Inicio
 

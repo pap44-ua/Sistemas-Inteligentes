@@ -10,6 +10,7 @@ class Variable:
         self.palabra=""
         self.restriccion=[]
         self.borradas=[]
+        self.borradasFC=[]
     
     def horizontal (self):
         if (self.coorInicio[0]- self.coorFin[0])==0:
@@ -25,7 +26,7 @@ class Variable:
         return self.dominio
     
     def setDominio(self, newDominio):
-        self.dominio=newDominio
+        self.dominio.extend(newDominio)
         
     def getNombre(self):
         return self.nombre
@@ -57,4 +58,6 @@ class Variable:
         self.borradas=borradas
     def getBorradas(self):
         return self.borradas
+    def getBorradasFC(self):
+        return self.borradasFC
         
