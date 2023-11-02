@@ -16,8 +16,8 @@ BLANCO=(255, 255, 255)
 MARGEN=5 #ancho del borde entre celdas
 MARGEN_INFERIOR=60 #altura del margen inferior entre la cuadrícula y la ventana
 TAM=60  #tamaño de la celda
-FILS=2 #5 # número de filas del crucigrama
-COLS=2 #6 # número de columnas del crucigrama
+FILS=3 #5 # número de filas del crucigrama
+COLS=3 #6 # número de columnas del crucigrama
 
 
 
@@ -117,9 +117,14 @@ def sacarVariablesHor(tablero,ID):#DUDA: Mirar bn si reconoce las variables de 1
         for col in range( 0, tablero.getAncho()):
             coorInicio = (fila , coorInicio[1]) #Va actualizando la coorInicio, solo cambiará cuando se encuentre con una casilla negra
             
+          
             if(col== tablero.getAncho()-1):
-                variables.append(Variable((coorInicio),(fila,col),ID))
-                ID=ID+1#si donde esta es vacio que lo tenga en cuenta
+                if(tablero.getCelda(fila,col)!=LLENA):
+                    variables.append(Variable((coorInicio),(fila,col),ID))
+                    ID=ID+1#si donde esta es vacio que lo tenga en cuenta
+                else:
+                    variables.append(Variable((coorInicio),(fila,col-1),ID))
+                    ID=ID+1#si donde esta es vacio que lo tenga en cuenta
                 
                     
 
@@ -261,6 +266,7 @@ def main():
                      print("AC3")
                 elif pulsaBotonReset(pos, anchoVentana, altoVentana):                   
                     tablero.reset()
+                    ID=0
                 elif inTablero(pos):
                     colDestino=pos[0]//(TAM+MARGEN)
                     filDestino=pos[1]//(TAM+MARGEN)                    
