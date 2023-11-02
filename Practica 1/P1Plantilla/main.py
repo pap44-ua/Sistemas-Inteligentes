@@ -253,9 +253,8 @@ def main():
                         print(i.longitud())
                         print(i.getNombre())
                         
-                    uwu=start(almacen,tablero,varHor,varVer)
-                        
-                    res=False #aquí llamar al forward checking
+                    res=start(almacen,tablero,varHor,varVer)
+                    
                     if res==False:
                         MessageBox.showwarning("Alerta", "No hay solución")                                  
                 elif pulsaBotonAC3(pos, anchoVentana, altoVentana):                    

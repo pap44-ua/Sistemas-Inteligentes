@@ -73,7 +73,7 @@ def FC(variables):
     primerVar=variables[0]
     dominio=variables[0].getDominio().copy()
     for  primeraPal in dominio:
-        aux = aux +1 #La primera variable seria 1
+        
         print("La primera variable: ",primerVar.getCoorIni())
         print("La primera variable: ",primerVar.getCoorFin())
         print("Dominio asignado: ", primerVar.getDominio()) 
@@ -94,6 +94,7 @@ def FC(variables):
         if primerVar == variables[-1]:
             return True
         if forward(primerVar):
+            aux = aux +1 #La primera variable seria 1
             if(FC(variables[1:])):
                 return True
         else:
@@ -234,21 +235,26 @@ def start(almacen,tablero,varHor, varVer):
     variables.extend(varVer)
             
     fc = FC(variables)
-
+    print("FORWARD CHECKING", fc)
 #Si todo va bn imprimimos
-    for var in variables:
-        for pos in range(var.getCoorIni()[0],var.getCoorFin()[0]):
-            for pos in range(var.getCoorIni()[1],var.getCoorFin()[1]):
-                for letra in var.getPalabra():
-                    Tablero.setCelda(pos[0],pos[1],letra)
+    if(fc):
+        for var in varHor:
+            fila,columna = var.getCoorIni()
+            for a in range(var.longitud()):
+                tablero.setCelda(fila,columna+a,var.getPalabra()[a])
+#             print("Variable",var)
+# #             print("Variable coor inicio", var.getCoorIni())
+# #             print("Variable coor final", var.getCoorFin())
+#             print("Variable palabra", var.getPalabra())
+#             for pos in range(var.getCoorIni()[0],var.getCoorFin()[0]+1):
+#                 print("POSICION Y ",pos)
+#                 for posi in range(var.getCoorIni()[1],var.getCoorFin()[1]+1):
+#                     print("POSICION X ",posi)
+#                     for letra in var.getPalabra():
+#                         tablero.setCelda(pos,posi,letra)
 
-    #Sacamos la primera palabra
+
     return fc
-
-    #El C4 del mensaje que envio en el profesor ya no se hacerlo :_(
-
-    return False
-    
     
     
     
