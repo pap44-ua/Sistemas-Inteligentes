@@ -16,8 +16,8 @@ BLANCO=(255, 255, 255)
 MARGEN=5 #ancho del borde entre celdas
 MARGEN_INFERIOR=60 #altura del margen inferior entre la cuadrícula y la ventana
 TAM=60  #tamaño de la celda
-FILS=2 #5 # número de filas del crucigrama
-COLS=2#6 # número de columnas del crucigrama
+FILS=5 #5 # número de filas del crucigrama
+COLS=6#6 # número de columnas del crucigrama
 
 
 
@@ -122,16 +122,22 @@ def sacarVariablesHor(tablero,ID):#DUDA: Mirar bn si reconoce las variables de 1
                 if(tablero.getCelda(fila,col)!=LLENA):
                     variables.append(Variable((coorInicio),(fila,col),ID))
                     ID=ID+1#si donde esta es vacio que lo tenga en cuenta
-                else:
+                else: #si la casilla negra es la ultima
                     variables.append(Variable((coorInicio),(fila,col-1),ID))
                     ID=ID+1#si donde esta es vacio que lo tenga en cuenta
                 
                     
 
-            elif(tablero.getCelda(fila,col)==LLENA):#error aqui
-                variables.append(Variable((coorInicio),(fila,col-1),ID))#si donde esta esta en negro que no la cuente para la variable
-                ID=ID+1
-                coorInicio=(coorInicio[0],col+1)               
+            elif(tablero.getCelda(fila,col)==LLENA):#ya no hay error
+                #si la casilla negra es la primera
+                if(coorInicio[1]==col):
+                    coorInicio=(fila,col+1)
+                else:#si la casilla negra esta por en medio
+                    variables.append(Variable((coorInicio),(fila,col-1),ID))#si donde esta esta en negro que no la cuente para la variable
+                    ID=ID+1
+                    coorInicio=(coorInicio[0],col+1) 
+               
+                              
     
     return variables, ID
 
@@ -152,6 +158,9 @@ def sacarVariablesVer(tablero,ID):
                     
 
             elif(tablero.getCelda(fil,col)==LLENA):#error aqui
+                #si la casilla negra es la primera
+                
+                #si la casilla negra esta por en medio
                 variables.append(Variable((coorInicio),(fil-1,col),ID))#si donde esta esta en negro que no la cuente para la variable
                 ID=ID+1
                 coorInicio=(fil+1,coorInicio[1])               
@@ -172,6 +181,7 @@ def buscarVar(listaVar, coorInicio): #NOTA: Si es de un solo hueco mirar que lo 
                 print("buscar variable hor")
                 print(a.getCoorIni())
                 print(a.getCoorFin())
+                print()
                 return a
             
     else:
@@ -182,24 +192,8 @@ def buscarVar(listaVar, coorInicio): #NOTA: Si es de un solo hueco mirar que lo 
                 print("buscar variable ver")
                 print(a.getCoorIni())
                 print(a.getCoorFin())
+                print()
                 return a
-
-#def logFC():
-
-# def start(tablero, variables, almacen):
-#     for variable in variables:
-#         tam_variable = variable.longitud()
-#         if tam_variable > 0:  # Asegúrate de que la variable tiene un tamaño mayor que cero
-#             primera_palabra = almacen[busca(almacen,tam_variable)].getLista()[0]  # Obtén la primera palabra del dominio del tamaño adecuado
-#             if variable.horizontal():
-#                 for x in range(variable.coorInicio[0], variable.coorFin[0] + 1):
-#                     letra = primera_palabra[x - variable.coorInicio[0]]  # Obtiene la letra correspondiente en la palabra
-#                     tablero.setCelda(x, variable.coorInicio[1], letra)
-#             else:
-#                 for y in range(variable.coorInicio[1], variable.coorFin[1] + 1):
-#                     letra = primera_palabra[y - variable.coorInicio[1]]  # Obtiene la letra correspondiente en la palabra
-#                     tablero.setCelda(variable.coorInicio[0], y, letra)
-
 
 
 #########################################################################  
@@ -241,7 +235,7 @@ def main():
             if event.type==pygame.MOUSEBUTTONUP:                
                 #obtener posición y calcular coordenadas matriciales                               
                 pos=pygame.mouse.get_pos()                
-                if pulsaBotonFC(pos, anchoVentana, altoVentana):
+                if pulsaBotonFC(pos, anchoVentana, altoVentana): #Aqui hace el FC
                     print("FC")
                     varHor,ID= sacarVariablesHor(tablero,ID)
                     varVer,ID=sacarVariablesVer(tablero,ID)
@@ -255,6 +249,7 @@ def main():
                     for i in varVer:
                         print("VERTICAL")
                         print(i.coorInicio)
+                        print(i.coorFin)
                         print(i.longitud())
                         print(i.getNombre())
                         
