@@ -16,8 +16,8 @@ BLANCO=(255, 255, 255)
 MARGEN=5 #ancho del borde entre celdas
 MARGEN_INFERIOR=60 #altura del margen inferior entre la cuadrícula y la ventana
 TAM=60  #tamaño de la celda
-FILS=3 #5 # número de filas del crucigrama
-COLS=3#6 # número de columnas del crucigrama
+FILS=5 #5 # número de filas del crucigrama
+COLS=6#6 # número de columnas del crucigrama
 
 
 
@@ -152,9 +152,12 @@ def sacarVariablesVer(tablero,ID):
             coorInicio = (coorInicio[0],col) #Va actualizando la coorInicio, solo cambiará cuando se encuentre con una casilla negra
             
             if(fil== tablero.getAlto()-1):
-                variables.append(Variable((coorInicio),(fil,col),ID))
-                ID=ID+1#si donde esta es vacio que lo tenga en cuenta
-                
+                if(tablero.getCelda(fil,col)!=LLENA):
+                    variables.append(Variable((coorInicio),(fil,col),ID))
+                    ID=ID+1#si donde esta es vacio que lo tenga en cuenta
+                else: #si la casilla negra es la ultima
+                    variables.append(Variable((coorInicio),(fil-1,col),ID))
+                    ID=ID+1#si donde esta es vacio que lo tenga en cuenta
                     
 
             elif(tablero.getCelda(fil,col)==LLENA):#error aqui
@@ -174,7 +177,7 @@ def sacarVariablesVer(tablero,ID):
 
 #Busca en la lista que quiero la variable que tenga esa coordenada de Inicio
 
-def buscarVar(listaVar, coorInicio): #NOTA: Si es de un solo hueco mirar que lo haga bn
+def buscarVar(listaVar, coorInicio): #esta mal: hay que mirar que contenga esa coordenada
     
     if(listaVar[0].horizontal()):
         for a in listaVar:
@@ -184,6 +187,7 @@ def buscarVar(listaVar, coorInicio): #NOTA: Si es de un solo hueco mirar que lo 
                 print("buscar variable hor")
                 print(a.getCoorIni())
                 print(a.getCoorFin())
+                print(a.getNombre())
                 print()
                 return a
             
@@ -195,6 +199,7 @@ def buscarVar(listaVar, coorInicio): #NOTA: Si es de un solo hueco mirar que lo 
                 print("buscar variable ver")
                 print(a.getCoorIni())
                 print(a.getCoorFin())
+                print(a.getNombre())
                 print()
                 return a
 
