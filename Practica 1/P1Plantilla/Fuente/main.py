@@ -16,8 +16,8 @@ BLANCO=(255, 255, 255)
 MARGEN=5 #ancho del borde entre celdas
 MARGEN_INFERIOR=60 #altura del margen inferior entre la cuadrícula y la ventana
 TAM=60  #tamaño de la celda
-FILS=5 #5 # número de filas del crucigrama
-COLS=6#6 # número de columnas del crucigrama
+FILS=3 #5 # número de filas del crucigrama
+COLS=3#6 # número de columnas del crucigrama
 
 
 
@@ -159,11 +159,14 @@ def sacarVariablesVer(tablero,ID):
 
             elif(tablero.getCelda(fil,col)==LLENA):#error aqui
                 #si la casilla negra es la primera
-                
-                #si la casilla negra esta por en medio
-                variables.append(Variable((coorInicio),(fil-1,col),ID))#si donde esta esta en negro que no la cuente para la variable
-                ID=ID+1
-                coorInicio=(fil+1,coorInicio[1])               
+                if(coorInicio[0]==fil):
+                    coorInicio=(fil+1,col)
+                else:#si la casilla negra esta por en medio
+                    variables.append(Variable((coorInicio),(fil-1,col),ID))#si donde esta esta en negro que no la cuente para la variable
+                    ID=ID+1
+                    coorInicio=(fil+1,coorInicio[1])  
+            
+                             
     
     return variables, ID
 
