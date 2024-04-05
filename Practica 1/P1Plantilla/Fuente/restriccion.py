@@ -1,19 +1,14 @@
 
 
 class Restriccion:
-    def __init__(self,coorX,varY,coorY):
-        self.coorX=coorX
+    def __init__(self,varY,coor):
+        self.coor=coor
         self.varY=varY
-        self.coorY=coorY
-
-    def getPosX(self):
-        return self.coorX
-    
+       
     def getY(self):
         return self.varY
     
     def setY(self, varY):
         self.varY = varY
     
-    def getPosY(self):
-        return self.coorY
+    

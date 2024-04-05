@@ -177,31 +177,20 @@ def sacarVariablesVer(tablero,ID):
 
 #Busca en la lista que quiero la variable que tenga esa coordenada de Inicio
 
-def buscarVar(listaVar, coorInicio): #esta mal: hay que mirar que contenga esa coordenada
+def buscarVar(listaVar, coorBusq): #Falta implementar que si las variables son horizantales lo haga con x
+
+    #for que recorre la lista de las variables
+    for palabra in listaVar:
+        #for que recorre todas las posiciones y
+        for y in range(palabra.getCoorIni()[0], palabra.getCoorFin()[0]+1): #para caso vertical
+            if((y,palabra.getCoorIni()[1])==coorBusq):
+                return palabra
+        for x in range(palabra.getCoorIni()[1], palabra.getCoorFin()[1]+1): #para caso horizontal ( no hace falta un if pq directamente si no cambia la x no entrara)
+            if((palabra.getCoorIni()[0],x)==coorBusq):
+                return palabra
+    return Variable((-1,-1),(-1,-1),-1)
     
-    if(listaVar[0].horizontal()):
-        for a in listaVar:
-            if((coorInicio[0]+1,coorInicio[1])==LLENA):
-                return Variable((-1,-1),(-1,-1))
-            if(coorInicio==a.coorInicio):
-                print("buscar variable hor")
-                print(a.getCoorIni())
-                print(a.getCoorFin())
-                print(a.getNombre())
-                print()
-                return a
-            
-    else:
-        for a in listaVar:
-            if((coorInicio[0],coorInicio[1]+1)==LLENA):
-                return Variable((-1,-1),(-1,-1))
-            if(coorInicio==a.coorInicio):
-                print("buscar variable ver")
-                print(a.getCoorIni())
-                print(a.getCoorFin())
-                print(a.getNombre())
-                print()
-                return a
+
 
 
 #########################################################################  
