@@ -24,13 +24,10 @@ def restaura(var): #Me da error pq no se asigna una variable
         for elemento in elementos:
             if var.getNombre() == elemento[1]:
                 print("ANTES:", res.getY().getDominio())
-                res.getY().getDominio().append(elemento[0])
-                res.getY().getBorradas().remove(elemento)
+                res.getY().dominio.append(elemento[0])
+                res.getY().borradas.remove(elemento)
                 print("DESPUES:", res.getY().getDominio())
-#                 restriccion=var.getRestriccion()[aux].getY().getDominio()
-#                 restriccion.append(elemento[0])
-#                 var.getRestriccion()[aux].getY().setDominio(restriccion)
-            
+
         aux=aux+1
     #Borramos de la variable X
         domi=var.setPalabra("")
@@ -50,6 +47,7 @@ def forward(var):
         
             dominio = res.getY().getDominio().copy()
             print("DOMINIO INICIAL",dominio)
+            print("Coordenada",res.coor)
             for dom in dominio:
                 if(dom[res.coor[0]]!=var.getPalabra()[res.coor[1]]):
                     res.getY().getBorradas().append((dom,var.getNombre()))
@@ -70,20 +68,15 @@ def forward(var):
     #Hasta aqui C4 parte 1
 
 
-def FC(variables):
+def FC(variables,aux):
     print()
     print("FC")
     print()
-    aux = 0
+    
     borradas=[] #Tula de (palabra borrada , ID de quien lo ha borrado)
     primerVar=variables[0]
     dominio=variables[0].getDominio().copy()
-    print()
-    print()
-    for var in variables:
-        print("VARIABLE LISTA",var.nombre)
-        
-    print()
+  
     print()
     print("La primera variable: ",primerVar.nombre)
     print("Dominio asignado: ", primerVar.getDominio()) 
@@ -93,15 +86,11 @@ def FC(variables):
         
 #         print("La primera variable: ",primerVar.getCoorFin())
         
-        print("La primera palabra", primeraPal)
-        if(primerVar.nombre == 0):
-            rest=restaura(primerVar)
-            
-            
-#         
+#         print("La primera palabra", primeraPal)
+        
        # Elimina 'primeraPal' de la lista 'dominio'
 
-        print("LO QUE DEBERIA SALIR ", dominio)
+#         print("LO QUE DEBERIA SALIR ", dominio)
         
         primerVar.setPalabra(primeraPal)
         
@@ -119,9 +108,10 @@ def FC(variables):
         if forward(primerVar):
             aux = aux +1 #La primera variable seria 1
             
-            if(FC(variables[1:])):
-                
+            if(FC(variables[1:],aux)):
                 return True
+            else:
+                rest=restaura(primerVar)
             
                 
         else:
@@ -136,9 +126,10 @@ def FC(variables):
         
     
         
-    if aux !=1: #Si no es la primera variable
+    if aux !=0: #Si no es la primera variable
         print("JAJAN'T")
-        primerVar.setDominio(primerVar.getBorradas())
+        primerVar.setDominio(primerVar.getBorradasFC())
+        primerVar.getBorradasFC().clear()
         
     return False
         
@@ -205,7 +196,7 @@ def start(almacen,tablero,varHor, varVer):
             
             
             #a devuelve la posicion que le corresponde
-            newRestriccion=Restriccion(varY,coorBusq ) #Comprobar que esto se hace como quiero
+            newRestriccion=Restriccion(varY,(coorBusq[0],coorBusq[1]-var.coorInicio[1]) ) #Comprobar que esto se hace como quiero
             
 #             
 # #             print()
@@ -256,7 +247,7 @@ def start(almacen,tablero,varHor, varVer):
             
             if(varY.coorInicio[0]==-1):
                 break
-            newRestriccion=Restriccion(varY,coorBusq) #Comprobar que esto se hace como quiero
+            newRestriccion=Restriccion(varY,(coorBusq[0]-var.coorInicio[0],coorBusq[1])) #Comprobar que esto se hace como quiero
             
 #             print("Restriccion")
 #             print (newRestriccion.getPosX())
@@ -284,7 +275,7 @@ def start(almacen,tablero,varHor, varVer):
     variables.extend(varHor)
     variables.extend(varVer)
             
-    fc = FC(variables)
+    fc = FC(variables,0)
 #     print("FORWARD CHECKING", fc)
 #Si todo va bn imprimimos
     if(fc):
