@@ -120,22 +120,34 @@ def sacarVariablesHor(tablero,ID):#DUDA: Mirar bn si reconoce las variables de 1
           
             if(col== tablero.getAncho()-1):
                 if(tablero.getCelda(fila,col)!=LLENA):
-                    variables.append(Variable((coorInicio),(fila,col),ID))
-                    ID=ID+1#si donde esta es vacio que lo tenga en cuenta
-                else: #si la casilla negra es la ultima
-                    variables.append(Variable((coorInicio),(fila,col-1),ID))
-                    ID=ID+1#si donde esta es vacio que lo tenga en cuenta
-                
+                    varAux = Variable((coorInicio),(fila,col),ID)
                     
-
+                    if(varAux.longitud() != 1):
+                        variables.append(varAux)
+                        ID=ID+1#si donde esta es vacio que lo tenga en cuenta
+                    
+                else: #si la casilla negra es la ultima
+                    varAux = Variable((coorInicio),(fila,col-1),ID)
+                    
+                    if(varAux.longitud() != 1):
+                        variables.append(varAux)
+                        ID=ID+1#si donde esta es vacio que lo tenga en cuenta
+                    
+                                    
             elif(tablero.getCelda(fila,col)==LLENA):#ya no hay error
                 #si la casilla negra es la primera
                 if(coorInicio[1]==col):
                     coorInicio=(fila,col+1)
                 else:#si la casilla negra esta por en medio
-                    variables.append(Variable((coorInicio),(fila,col-1),ID))#si donde esta esta en negro que no la cuente para la variable
-                    ID=ID+1
+                    
+                    varAux = Variable((coorInicio),(fila,col-1),ID)
+                    
+                    if(varAux.longitud() != 1):
+                        variables.append(varAux)#si donde esta esta en negro que no la cuente para la variable
+                        ID=ID+1
                     coorInicio=(coorInicio[0],col+1) 
+                    
+                    
                
                               
     
@@ -153,11 +165,19 @@ def sacarVariablesVer(tablero,ID):
             
             if(fil== tablero.getAlto()-1):
                 if(tablero.getCelda(fil,col)!=LLENA):
-                    variables.append(Variable((coorInicio),(fil,col),ID))
-                    ID=ID+1#si donde esta es vacio que lo tenga en cuenta
+                    varAux = Variable((coorInicio),(fil,col),ID)
+                    
+                    if(varAux.longitud() != 1):
+                        variables.append(varAux)
+                        ID=ID+1#si donde esta es vacio que lo tenga en cuenta
+                    
                 else: #si la casilla negra es la ultima
-                    variables.append(Variable((coorInicio),(fil-1,col),ID))
-                    ID=ID+1#si donde esta es vacio que lo tenga en cuenta
+                    varAux = Variable((coorInicio),(fil-1,col),ID)
+                    
+                    if(varAux.longitud() != 1):
+                        variables.append(varAux)
+                        ID=ID+1#si donde esta es vacio que lo tenga en cuenta
+                    
                     
 
             elif(tablero.getCelda(fil,col)==LLENA):#error aqui
@@ -165,9 +185,13 @@ def sacarVariablesVer(tablero,ID):
                 if(coorInicio[0]==fil):
                     coorInicio=(fil+1,col)
                 else:#si la casilla negra esta por en medio
-                    variables.append(Variable((coorInicio),(fil-1,col),ID))#si donde esta esta en negro que no la cuente para la variable
-                    ID=ID+1
+                    varAux = Variable((coorInicio),(fil-1,col),ID)
+                    
+                    if(varAux.longitud() != 1):
+                        variables.append(varAux)#si donde esta esta en negro que no la cuente para la variable
+                        ID=ID+1
                     coorInicio=(fil+1,coorInicio[1])  
+                    
             
                              
     
@@ -237,18 +261,18 @@ def main():
                     varHor,ID= sacarVariablesHor(tablero,ID)
                     varVer,ID=sacarVariablesVer(tablero,ID)
                     
-                    for i in varHor:
-                        print("HORIZONTAL")
-                        print(i.coorInicio)
-                        print(i.coorFin)
-                        print(i.longitud())
-                        print(i.getNombre())
-                    for i in varVer:
-                        print("VERTICAL")
-                        print(i.coorInicio)
-                        print(i.coorFin)
-                        print(i.longitud())
-                        print(i.getNombre())
+#                     for i in varHor:
+#                         print("HORIZONTAL")
+#                         print(i.coorInicio)
+#                         print(i.coorFin)
+#                         print(i.longitud())
+#                         print(i.getNombre())
+#                     for i in varVer:
+#                         print("VERTICAL")
+#                         print(i.coorInicio)
+#                         print(i.coorFin)
+#                         print(i.longitud())
+#                         print(i.getNombre())
                         
                     res=start(almacen,tablero,varHor,varVer)
                     
