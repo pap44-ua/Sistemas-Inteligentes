@@ -37,7 +37,7 @@ def restaura(var): #Me da error pq no se asigna una variable
 
 
 
-def forward(var):
+def forward(var,tablero):
     print
     print("forward forward forward forward forward forward forward ")
     print("VARIABLE:",var.nombre)
@@ -49,16 +49,30 @@ def forward(var):
             print("DOMINIO INICIAL",dominio)
             print("Coordenada",res.coor)
             for dom in dominio:
-                if(dom[res.coor[0]]!=var.getPalabra()[res.coor[1]]):
+                
+#                 print("Coordenada donde mira para empezar en 0: ",res.varY.coorInicio[0]-1,res.coor[1])
+#                 print("Deberia de ser:",dom[0], "igual a esto",var.getPalabra()[res.coor[1]])
+#                 print("La celda",tablero.getCelda(res.varY.coorInicio[0]-1,res.coor[1]))
+#                               
+                print("posicion de la palabra",res.varY.coorInicio[0]-res.coor[0])
+                
+                
+#                 if(dom[res.coor[0]]!=var.getPalabra()[res.coor[1]]):
+                if(dom[abs(res.varY.coorInicio[0]-res.coor[0])]!=var.getPalabra()[res.coor[1]]): #Problema con verticales que empiezan en medio
+                                        
                     res.getY().getBorradas().append((dom,var.getNombre()))
-                    
-                    print("Coor restriccion: ",res.coor)
-#                     print(res.getPosY())
-                    domi=res.getY().getDominio()#AQUI TENGO QUE GUARDAR QN LA BORRA
+                    print("Coor restriccion: ",res.coor)             
+                    domi=res.getY().getDominio()
                     domi.remove(dom)
                     print("Dominio que se queda: ", res.getY().getDominio())
                     print("Lista de borradas: ", res.getY().getBorradas())
-#                     res.getY().setDominio(domi)
+#                 elif tablero.getCelda(res.varY.coorInicio[0]-1,res.coor[1])!=LLENA and dom[0]!=var.getPalabra()[res.coor[1]]:
+#                     res.getY().getBorradas().append((dom,var.getNombre()))
+#                     print("Coor restriccion: ",res.coor)             
+#                     domi=res.getY().getDominio()
+#                     domi.remove(dom)
+#                     print("Dominio que se queda: ", res.getY().getDominio())
+#                     print("Lista de borradas: ", res.getY().getBorradas())
             if not res.getY().getDominio(): #Si la lista esta vacia se sale
                 return False
     print()
@@ -68,7 +82,7 @@ def forward(var):
     #Hasta aqui C4 parte 1
 
 
-def FC(variables,aux):
+def FC(variables,aux,tablero):
     print()
     print("FC")
     print()
@@ -95,10 +109,10 @@ def FC(variables,aux):
         print()
         if primerVar == variables[-1]:
             return True
-        if forward(primerVar):
+        if forward(primerVar,tablero):
             aux = aux +1 #La primera variable seria 1
             
-            if(FC(variables[1:],aux)):
+            if(FC(variables[1:],aux,tablero)):
                 return True
             else:
                 rest=restaura(primerVar)
@@ -205,7 +219,7 @@ def start(almacen,tablero,varHor, varVer):
     variables.extend(varHor)
 #     variables.extend(varVer)
             
-    fc = FC(variables,0)
+    fc = FC(variables,0,tablero)
     print("FORWARD CHECKING", fc)
 #Si todo va bn imprimimos
     if(fc):
@@ -213,52 +227,17 @@ def start(almacen,tablero,varHor, varVer):
             fila,columna = var.getCoorIni()
             for a in range(var.longitud()):
                 tablero.setCelda(fila,columna+a,var.getPalabra()[a])
-#             print("Variable",var)
-# #             print("Variable coor inicio", var.getCoorIni())
-# #             print("Variable coor final", var.getCoorFin())
-#             print("Variable palabra", var.getPalabra())
-#             for pos in range(var.getCoorIni()[0],var.getCoorFin()[0]+1):
-#                 print("POSICION Y ",pos)
-#                 for posi in range(var.getCoorIni()[1],var.getCoorFin()[1]+1):
-#                     print("POSICION X ",posi)
-#                     for letra in var.getPalabra():
-#                         tablero.setCelda(pos,posi,letra)
 
 
     return fc
     
     
-    
-    
-    
-    
-    
-    
-    
-    
-#     #while(True):
-#     if(i==tablero.getAlto()-1):
-#         break
-    #else:
+def imprimirTablero(tablero):
+    for fila in range(tablero.getAlto()):
+        for col in range(tablero.getAncho()):
+            # Imprimir la celda y un espacio en la misma línea
+            print(f"{tablero.getCelda(fila, col)} ", end="")
+        # Saltar a la siguiente línea después de imprimir todas las celdas de la fila
+        print()
 
-#     posAlmacen=busca(almacen,varHor[i].longitud())
-#     palabra=almacen[posAlmacen].getLista()[0]
-#     letras=[]
-#     j=0
-#     print(palabra)
-#     
-#     if(varHor[i].horizontal):
-#         for letra in palabra:
-#             letras.append(letra)
-#         for a in range(varHor[i].coorInicio[1], varHor[i].coorFin[1]+1):
-#             print(varHor[i].coorInicio)
-#             print(varHor[i].coorFin)
-#             if(j+1==len(letras)):
-#                 break
-#             print(a)
-#             print (varHor[i].coorInicio[1])
-#             tablero.setCelda(a,varHor[i].coorInicio[1],letras[j])
-#             j=j+1
-            #else:
-                #for a in range(varHor[i].coorInicio[0], varHor[i].coorFin[0]+1):
-
+    
