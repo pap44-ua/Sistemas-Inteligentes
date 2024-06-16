@@ -1,133 +1,149 @@
-import logging, os
 import numpy as np
+from sklearn.metrics import confusion_matrix, accuracy_score
 import matplotlib.pyplot as plt
-from tensorflow import keras
-import time
 
-logging.disable(logging.WARNING)
-os.environ["TF_CPP_MIN_LOG_LEVEL"] = "3"
-
-# Cargar los datos de MNIST
-(X_train, Y_train), (X_test, Y_test) = keras.datasets.mnist.load_data()
-print(X_train.shape, X_train.dtype)
-print(Y_train.shape, Y_train.dtype)
-print(X_test.shape, X_test.dtype)
-print(Y_test.shape, Y_test.dtype)
-
-def show_image(imagen, title):
-    plt.figure()
-    plt.suptitle(title)
-    plt.imshow(imagen, cmap="Greys")
-    plt.show()
-
-for i in range(3):
-    title = f"Mostrando imagen X_train[{i}] -- Y_train[{i}] = {Y_train[i]}"
-    show_image(X_train[i], title)
-
-def plot_X(X, title):
-    plt.title(title)
-    plt.plot(X)
-    plt.show()
-
-fila, columna = 10, 10
-features_fila_col = X_train[:, fila, columna]
-print(len(np.unique(features_fila_col)))
-title = f"Valores en ({fila}, {columna})"
-plot_X(features_fila_col, title)
 
 class DecisionStump:
-    def __init__(self, n_features):
-        # Seleccionar al azar una característica, un umbral y una polaridad
-        self.feature_index = np.random.randint(0, n_features)
-        self.threshold = np.random.uniform()
-        self.polarity = 1 if np.random.rand() > 0.5 else -1
+    def __init__(self):
+        self.feature_index = None
+        self.threshold = None
+        self.alpha = None
+        self.direction = None
 
-    def predict(self, X):
-        feature_values = X[:, self.feature_index]
-        predictions = np.ones(X.shape[0])
-        if self.polarity == 1:
-            predictions[feature_values < self.threshold] = -1
-        else:
-            predictions[feature_values >= self.threshold] = -1
-        return predictions
-
-class Adaboost:
-    def __init__(self, T=5, A=20):
-        self.T = T
-        self.A = A
-        self.alphas = []
-        self.classifiers = []
-
-    def fit(self, X, Y, verbose=False):
+    def fit(self, X, y, weights):
         n_samples, n_features = X.shape
-        w = np.ones(n_samples) / n_samples
+        min_error = float('inf')
 
-        for t in range(self.T):
-            min_error = float('inf')
-            best_classifier = None
-            for _ in range(self.A):
-                stump = DecisionStump(n_features)
-                predictions = stump.predict(X)
-                misclassified = w * (predictions != Y)
-                error = np.sum(misclassified)
-
+        # Iterar sobre cada característica y encontrar el mejor umbral
+        for feature_index in range(n_features):
+            feature_values = np.unique(X[:, feature_index])
+            for threshold in feature_values:
+                p = 1
+                prediction = np.ones(n_samples)
+                prediction[X[:, feature_index] < threshold] = -1
+                
+                # Calcular el error ponderado
+                error = np.sum(weights[y != prediction])
+                
+                # Guardar el mejor umbral encontrado hasta ahora
                 if error < min_error:
                     min_error = error
-                    best_classifier = stump
-
-            EPS = 1e-10
-            alpha = 0.5 * np.log((1.0 - min_error) / (min_error + EPS))
-            predictions = best_classifier.predict(X)
-            w *= np.exp(-alpha * Y * predictions)
-            w /= np.sum(w)
-
-            self.alphas.append(alpha)
-            self.classifiers.append(best_classifier)
-
-            if verbose:
-                print(f'Classifier {t+1}/{self.T}, Error: {min_error}, Alpha: {alpha}')
+                    self.feature_index = feature_index
+                    self.threshold = threshold
+                    self.direction = p if np.mean(prediction == y) > 0.5 else -1
 
     def predict(self, X):
-        classifier_preds = np.array([alpha * clf.predict(X) for alpha, clf in zip(self.alphas, self.classifiers)])
-        y_pred = np.sum(classifier_preds, axis=0)
-        return np.sign(y_pred)
+        n_samples = X.shape[0]
+        prediction = np.ones(n_samples)
+        prediction[X[:, self.feature_index] < self.threshold] = -1
+        return self.direction * prediction
 
-def evaluar_clasificador(clase, T, A, verbose=False):
-    # Convertir las etiquetas a {-1, 1} para la clase especificada
-    Y_train_binary = np.where(Y_train == clase, 1, -1)
-    Y_test_binary = np.where(Y_test == clase, 1, -1)
+class AdaboostBinario:
+    def __init__(self, n_estimators=50):
+        self.n_estimators = n_estimators
+        self.estimators = []
+        self.alphas = []
 
-    # Aplanar las imágenes de 28x28 a un vector de 784 características
-    X_train_flat = X_train.reshape((X_train.shape[0], -1))
-    X_test_flat = X_test.reshape((X_test.shape[0], -1))
+    def fit(self, X, y):
+        n_samples = X.shape[0]
+        weights = np.full(n_samples, 1/n_samples)
+        
+        for _ in range(self.n_estimators):
+            stump = DecisionStump()
+            stump.fit(X, y, weights)
+            
+            # Calcular el error ponderado
+            predictions = stump.predict(X)
+            err = np.sum(weights[y != predictions])
+            
+            # Calcular el peso del clasificador
+            alpha = 0.5 * np.log((1 - err) / max(err, 1e-10))
+            self.estimators.append(stump)
+            self.alphas.append(alpha)
+            
+            # Actualizar los pesos
+            weights *= np.exp(-alpha * y * predictions)
+            weights /= np.sum(weights)
 
-    # Entrenar el modelo Adaboost
-    adaboost = Adaboost(T=T, A=A)
+    def predict(self, X):
+        n_samples = X.shape[0]
+        results = np.zeros(n_samples)
+        
+        for stump, alpha in zip(self.estimators, self.alphas):
+            results += alpha * stump.predict(X)
+        
+        return np.sign(results)
+def prepare_class_data(class_label, X_train, Y_train):
+    # Filtrar ejemplos de la clase específica y del resto
+    indices_class = np.where(Y_train == class_label)[0]
+    indices_resto = np.where(Y_train != class_label)[0]
     
-    start_time = time.time()
-    adaboost.fit(X_train_flat, Y_train_binary, verbose=verbose)
-    end_time = time.time()
+    # Seleccionar tantos ejemplos de la clase como de la clase "resto"
+    sample_size = min(len(indices_class), len(indices_resto))
+    selected_indices = np.concatenate([indices_class[:sample_size], indices_resto[:sample_size]])
     
-    # Obtener las predicciones del modelo
-    train_predictions = adaboost.predict(X_train_flat)
-    test_predictions = adaboost.predict(X_test_flat)
+    X_class = X_train[selected_indices]
+    Y_class = np.zeros(2 * sample_size)
+    Y_class[:sample_size] = 1  # Etiquetas para la clase específica
+    Y_class[sample_size:] = -1  # Etiquetas para el resto de clases
     
-    # Calcular la precisión
-    train_accuracy = np.mean(train_predictions == Y_train_binary)
-    test_accuracy = np.mean(test_predictions == Y_test_binary)
-    
-    elapsed_time = end_time - start_time
-    
-    print(f'Train Accuracy: {train_accuracy * 100:.2f}%')
-    print(f'Test Accuracy: {test_accuracy * 100:.2f}%')
-    print(f'Training Time: {elapsed_time:.3f} s')
+    return X_class, Y_class
+
+
+
+
+def train_and_evaluate_adaboost_for_all_classes(X_train, Y_train, X_test, Y_test, n_estimators=1):
+    num_classes = 10
+    all_confusion_matrices = []
+
+    for class_label in range(num_classes):
+        print(f"Training AdaboostBinario for class {class_label}...")
+
+        # Preparar los datos para la clase específica y el "resto"
+        X_class, Y_class = prepare_class_data(class_label, X_train, Y_train)
+        
+        # Crear y entrenar el clasificador AdaboostBinario
+        adaboost = AdaboostBinario(n_estimators=n_estimators)
+        
+        print("Fitting AdaboostBinario...")
+        try:
+            adaboost.fit(X_class.reshape(len(X_class), -1), Y_class)
+        except Exception as e:
+            print(f"Error occurred during fitting AdaboostBinario: {e}")
+
+        print("AdaboostBinario trained.")
+
+        # Predecir en el conjunto de test
+        predictions = adaboost.predict(X_test.reshape(len(X_test), -1))
+        
+        # Calcular métricas
+        accuracy = accuracy_score((Y_test == class_label).astype(np.float64), (predictions == 1).astype(np.float64))
+        confusion_mat = confusion_matrix((Y_test == class_label).astype(int), (predictions == 1).astype(int))  # Aquí está el cambio
+        
+        print(f"Accuracy for class {class_label}: {accuracy:.2%}")
+        print("Confusion Matrix:")
+        print(confusion_mat)
+        print()
+        
+        all_confusion_matrices.append(confusion_mat)
+
 
 if __name__ == "__main__":
-    # Parámetros para la evaluación
-    clase = 9
-    T = 20
-    A = 10
-    verbose = True
+    import logging, os
+    import numpy as np
+    import matplotlib.pyplot as plt
+    from tensorflow import keras
 
-    print(f'Entrenando clasificador Adaboost para el dígito {clase}, T={T}, A={A}')
-    evaluar_clasificador(clase, T, A, verbose=verbose)
+    logging.disable(logging.WARNING)
+    os.environ["TF_CPP_MIN_LOG_LEVEL"] = "3"
+
+    # Cargar los datos de MNIST
+    (X_train, Y_train), (X_test, Y_test) = keras.datasets.mnist.load_data()
+
+    try:
+        # Entrenar y evaluar AdaboostBinario para todas las clases
+        train_and_evaluate_adaboost_for_all_classes(X_train, Y_train, X_test, Y_test)
+    except Exception as e:
+        print(f"Error occurred: {e}")
+        raise  # Re-lanzar la excepción para obtener más información si es necesario
+
