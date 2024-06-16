@@ -2,7 +2,7 @@ import logging, os
 import numpy as np
 import matplotlib.pyplot as plt
 from tensorflow import keras
-
+import time
 
 logging.disable(logging.WARNING)
 os.environ["TF_CPP_MIN_LOG_LEVEL"] = "3"
@@ -34,8 +34,6 @@ features_fila_col = X_train[:, fila, columna]
 print(len(np.unique(features_fila_col)))
 title = f"Valores en ({fila}, {columna})"
 plot_X(features_fila_col, title)
-
-
 
 class DecisionStump:
     def __init__(self, n_features):
@@ -94,18 +92,21 @@ class Adaboost:
         y_pred = np.sum(classifier_preds, axis=0)
         return np.sign(y_pred)
 
-if __name__ == "__main__":
-    # Convertir las etiquetas a {-1, 1}
-    Y_train_binary = np.where(Y_train == 9, 1, -1)
-    Y_test_binary = np.where(Y_test == 9, 1, -1)
-    
+def evaluar_clasificador(clase, T, A, verbose=False):
+    # Convertir las etiquetas a {-1, 1} para la clase especificada
+    Y_train_binary = np.where(Y_train == clase, 1, -1)
+    Y_test_binary = np.where(Y_test == clase, 1, -1)
+
     # Aplanar las imágenes de 28x28 a un vector de 784 características
     X_train_flat = X_train.reshape((X_train.shape[0], -1))
     X_test_flat = X_test.reshape((X_test.shape[0], -1))
-    
+
     # Entrenar el modelo Adaboost
-    adaboost = Adaboost(T=10, A=10)
-    adaboost.fit(X_train_flat, Y_train_binary, verbose=True)
+    adaboost = Adaboost(T=T, A=A)
+    
+    start_time = time.time()
+    adaboost.fit(X_train_flat, Y_train_binary, verbose=verbose)
+    end_time = time.time()
     
     # Obtener las predicciones del modelo
     train_predictions = adaboost.predict(X_train_flat)
@@ -115,5 +116,18 @@ if __name__ == "__main__":
     train_accuracy = np.mean(train_predictions == Y_train_binary)
     test_accuracy = np.mean(test_predictions == Y_test_binary)
     
-    print(f'Train Accuracy: {train_accuracy}')
-    print(f'Test Accuracy: {test_accuracy}')
+    elapsed_time = end_time - start_time
+    
+    print(f'Train Accuracy: {train_accuracy * 100:.2f}%')
+    print(f'Test Accuracy: {test_accuracy * 100:.2f}%')
+    print(f'Training Time: {elapsed_time:.3f} s')
+
+if __name__ == "__main__":
+    # Parámetros para la evaluación
+    clase = 9
+    T = 20
+    A = 10
+    verbose = True
+
+    print(f'Entrenando clasificador Adaboost para el dígito {clase}, T={T}, A={A}')
+    evaluar_clasificador(clase, T, A, verbose=verbose)
