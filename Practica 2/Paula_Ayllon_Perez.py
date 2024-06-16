@@ -97,7 +97,7 @@ def train_and_evaluate_adaboost_for_all_classes(X_train, Y_train, X_test, Y_test
     all_confusion_matrices = []
 
     for class_label in range(num_classes):
-        print(f"Training AdaboostBinario for class {class_label}...")
+        print(f"Entrenando Adaboost para la clase {class_label}...")
 
         # Preparar los datos para la clase específica y el "resto"
         X_class, Y_class = prepare_class_data(class_label, X_train, Y_train)
@@ -105,13 +105,13 @@ def train_and_evaluate_adaboost_for_all_classes(X_train, Y_train, X_test, Y_test
         # Crear y entrenar el clasificador AdaboostBinario
         adaboost = AdaboostBinario(n_estimators=n_estimators)
         
-        print("Fitting AdaboostBinario...")
+        print("Entrenando AdaboostBinario")
         try:
             adaboost.fit(X_class.reshape(len(X_class), -1), Y_class)
         except Exception as e:
-            print(f"Error occurred during fitting AdaboostBinario: {e}")
+            print(f"JAJA no que ha pasao: {e}")
 
-        print("AdaboostBinario trained.")
+        print("AdaboostBinario entrenamiento terminado")
 
         # Predecir en el conjunto de test
         predictions = adaboost.predict(X_test.reshape(len(X_test), -1))
@@ -120,8 +120,8 @@ def train_and_evaluate_adaboost_for_all_classes(X_train, Y_train, X_test, Y_test
         accuracy = accuracy_score((Y_test == class_label).astype(np.float64), (predictions == 1).astype(np.float64))
         confusion_mat = confusion_matrix((Y_test == class_label).astype(int), (predictions == 1).astype(int))  # Aquí está el cambio
         
-        print(f"Accuracy for class {class_label}: {accuracy:.2%}")
-        print("Confusion Matrix:")
+        print(f"Accuracy para la clase {class_label}: {accuracy:.2%}")
+        print("Confusion Matriz:")
         print(confusion_mat)
         print()
         
