@@ -1,0 +1,60 @@
+Entrenando clasificador para la clase 0
+Entrenando clasificador para la clase 1
+Entrenando clasificador para la clase 2
+Entrenando clasificador para la clase 3
+Entrenando clasificador para la clase 4
+Entrenando clasificador para la clase 5
+Entrenando clasificador para la clase 6
+Entrenando clasificador para la clase 7
+Entrenando clasificador para la clase 8
+Entrenando clasificador para la clase 9
+Evaluando clasificador para la clase 0
+Tasa de acierto para la clase 0: 0.8443
+Matriz de confusión para la clase 0:
+[[7776 1244]
+ [ 313  667]]
+Evaluando clasificador para la clase 1
+Tasa de acierto para la clase 1: 0.6181
+Matriz de confusión para la clase 1:
+[[5152 3713]
+ [ 106 1029]]
+Evaluando clasificador para la clase 2
+Tasa de acierto para la clase 2: 0.8348
+Matriz de confusión para la clase 2:
+[[7803 1165]
+ [ 487  545]]
+Evaluando clasificador para la clase 3
+Tasa de acierto para la clase 3: 0.7912
+Matriz de confusión para la clase 3:
+[[7366 1624]
+ [ 464  546]]
+Evaluando clasificador para la clase 4
+Tasa de acierto para la clase 4: 0.7120
+Matriz de confusión para la clase 4:
+[[6427 2591]
+ [ 289  693]]
+Evaluando clasificador para la clase 5
+Tasa de acierto para la clase 5: 0.5660
+Matriz de confusión para la clase 5:
+[[5046 4062]
+ [ 278  614]]
+Evaluando clasificador para la clase 6
+Tasa de acierto para la clase 6: 0.8244
+Matriz de confusión para la clase 6:
+[[7601 1441]
+ [ 315  643]]
+Evaluando clasificador para la clase 7
+Tasa de acierto para la clase 7: 0.7487
+Matriz de confusión para la clase 7:
+[[6757 2215]
+ [ 298  730]]
+Evaluando clasificador para la clase 8
+Tasa de acierto para la clase 8: 0.7311
+Matriz de confusión para la clase 8:
+[[6589 2437]
+ [ 252  722]]
+Evaluando clasificador para la clase 9
+Tasa de acierto para la clase 9: 0.6742
+Matriz de confusión para la clase 9:
+[[5884 3107]
+ [ 151  858]]

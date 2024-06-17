@@ -1,0 +1,65 @@
+>>> %Run Portatil.py
+2024-06-17 15:42:21.234493: I tensorflow/core/util/port.cc:113] oneDNN custom operations are on. You may see slightly different numerical results due to floating-point round-off errors from different computation orders. To turn them off, set the environment variable `TF_ENABLE_ONEDNN_OPTS=0`.
+WARNING:tensorflow:From C:\Users\paula\AppData\Roaming\Python\Python310\site-packages\keras\src\losses.py:2976: The name tf.losses.sparse_softmax_cross_entropy is deprecated. Please use tf.compat.v1.losses.sparse_softmax_cross_entropy instead.
+
+Entrenando clasificador para la clase 0
+Entrenando clasificador para la clase 1
+Entrenando clasificador para la clase 2
+Entrenando clasificador para la clase 3
+Entrenando clasificador para la clase 4
+Entrenando clasificador para la clase 5
+Entrenando clasificador para la clase 6
+Entrenando clasificador para la clase 7
+Entrenando clasificador para la clase 8
+Entrenando clasificador para la clase 9
+Evaluando clasificador para la clase 0
+Tasa de acierto para la clase 0: 0.8471
+Matriz de confusión para la clase 0:
+[[7693 1327]
+ [ 202  778]]
+Evaluando clasificador para la clase 1
+Tasa de acierto para la clase 1: 0.8372
+Matriz de confusión para la clase 1:
+[[7352 1513]
+ [ 115 1020]]
+Evaluando clasificador para la clase 2
+Tasa de acierto para la clase 2: 0.7962
+Matriz de confusión para la clase 2:
+[[7246 1722]
+ [ 316  716]]
+Evaluando clasificador para la clase 3
+Tasa de acierto para la clase 3: 0.7836
+Matriz de confusión para la clase 3:
+[[7153 1837]
+ [ 327  683]]
+Evaluando clasificador para la clase 4
+Tasa de acierto para la clase 4: 0.7389
+Matriz de confusión para la clase 4:
+[[6582 2436]
+ [ 175  807]]
+Evaluando clasificador para la clase 5
+Tasa de acierto para la clase 5: 0.6593
+Matriz de confusión para la clase 5:
+[[5967 3141]
+ [ 266  626]]
+Evaluando clasificador para la clase 6
+Tasa de acierto para la clase 6: 0.8287
+Matriz de confusión para la clase 6:
+[[7535 1507]
+ [ 206  752]]
+Evaluando clasificador para la clase 7
+Tasa de acierto para la clase 7: 0.7249
+Matriz de confusión para la clase 7:
+[[6559 2413]
+ [ 338  690]]
+Evaluando clasificador para la clase 8
+Tasa de acierto para la clase 8: 0.8298
+Matriz de confusión para la clase 8:
+[[7714 1312]
+ [ 390  584]]
+Evaluando clasificador para la clase 9
+Tasa de acierto para la clase 9: 0.7241
+Matriz de confusión para la clase 9:
+[[6552 2439]
+ [ 320  689]]
+
