@@ -9,135 +9,69 @@ from restriccion import *
 
 
 
-def restaura(var): #Me da error pq no se asigna una variable
-    print("restaura restaura restaura restaura restaura restaura restaura restaura restaura restaura restaura restaura ")
-    aux=0
-    
-#     print()
-#     print("restaura")
-    print()
-    print()
-    #Si el dominio de la restriccion Y se queda vacio hacemos esto
-    #Borramos de la variable Y
+from variable import Variable
+from tablero import Tablero
+
+def forward(var: Variable, tablero: Tablero) -> bool:
+    print(f"Forward checking for variable: {var.getNombre()}")
     for res in var.getRestriccion():
-        elementos=res.getY().getBorradas().copy()
+        dominio = res.getY().getDominio().copy()
+        print(f"Initial domain for {res.getY().getNombre()}: {dominio}")
+        for dom in dominio:
+            # Ajusta el índice para verificar la posición correcta del carácter
+            if dom[abs(res.varY.coorInicio[0] - res.coor[0])] != var.getPalabra()[res.coor[1]]:
+                res.getY().getBorradas().append((dom, var.getNombre()))
+                res.getY().getDominio().remove(dom)
+                print(f"Updated domain for {res.getY().getNombre()}: {res.getY().getDominio()}")
+
+        if not res.getY().getDominio():
+            return False
+    return True
+
+def restaura(var: Variable):
+    print(f"Restoring variable: {var.getNombre()}")
+    for res in var.getRestriccion():
+        elementos = res.getY().getBorradas().copy()
         for elemento in elementos:
             if var.getNombre() == elemento[1]:
-                print("ANTES:", res.getY().getDominio())
-                res.getY().dominio.append(elemento[0])
-                res.getY().borradas.remove(elemento)
-                print("DESPUES:", res.getY().getDominio())
-
-        aux=aux+1
-    #Borramos de la variable X
-        domi=var.setPalabra("")
-    
-    
-        
+                res.getY().getDominio().append(elemento[0])
+                res.getY().getBorradas().remove(elemento)
+                print(f"Restored domain for {res.getY().getNombre()}: {res.getY().getDominio()}")
+    var.setPalabra("")
 
 
+def FC(variables, aux, tablero):
+    print("Starting Forward Checking")
+    if not variables:
+        return True
 
-def forward(var,tablero):
-    print
-    print("forward forward forward forward forward forward forward ")
-    print("VARIABLE:",var.nombre)
-#     print(var.getRestriccion())
-    for res in var.getRestriccion() : #C3
-        
-        
-            dominio = res.getY().getDominio().copy()
-            print("DOMINIO INICIAL",dominio)
-            print("Coordenada",res.coor)
-            for dom in dominio:
-                
-#                 print("Coordenada donde mira para empezar en 0: ",res.varY.coorInicio[0]-1,res.coor[1])
-#                 print("Deberia de ser:",dom[0], "igual a esto",var.getPalabra()[res.coor[1]])
-#                 print("La celda",tablero.getCelda(res.varY.coorInicio[0]-1,res.coor[1]))
-#                               
-                print("posicion de la palabra",res.varY.coorInicio[0]-res.coor[0])
-                
-                
-#                 if(dom[res.coor[0]]!=var.getPalabra()[res.coor[1]]):
-                if(dom[abs(res.varY.coorInicio[0]-res.coor[0])]!=var.getPalabra()[res.coor[1]]): #Problema con verticales que empiezan en medio
-                                        
-                    res.getY().getBorradas().append((dom,var.getNombre()))
-                    print("Coor restriccion: ",res.coor)             
-                    domi=res.getY().getDominio()
-                    domi.remove(dom)
-                    print("Dominio que se queda: ", res.getY().getDominio())
-                    print("Lista de borradas: ", res.getY().getBorradas())
-#                 elif tablero.getCelda(res.varY.coorInicio[0]-1,res.coor[1])!=LLENA and dom[0]!=var.getPalabra()[res.coor[1]]:
-#                     res.getY().getBorradas().append((dom,var.getNombre()))
-#                     print("Coor restriccion: ",res.coor)             
-#                     domi=res.getY().getDominio()
-#                     domi.remove(dom)
-#                     print("Dominio que se queda: ", res.getY().getDominio())
-#                     print("Lista de borradas: ", res.getY().getBorradas())
-            if not res.getY().getDominio(): #Si la lista esta vacia se sale
-                return False
-    print()
-    print("FORWARD TRUE")
-    print()
-    return True
-    #Hasta aqui C4 parte 1
+    primerVar = variables[0]
+    dominio = primerVar.getDominio().copy()
+    print(f"Variable {primerVar.getNombre()} initial domain: {dominio}")
 
-
-def FC(variables,aux,tablero):
-    print()
-    print("FC")
-    print()
-    
-    borradas=[] #Tula de (palabra borrada , ID de quien lo ha borrado)
-    primerVar=variables[0]
-    dominio=variables[0].getDominio().copy()
-  
-    print()
-    print("La primera variable: ",primerVar.nombre)
-    print("Dominio asignado: ", primerVar.getDominio()) 
-    
-    for  primeraPal in dominio:
-        
-
-        
+    for primeraPal in dominio:
         primerVar.setPalabra(primeraPal)
-        
-        print("Palabra asignada: ", primerVar.getPalabra())
-#         print("Nuevo dominio asignado: ", primerVar.getDominio())
+        print(f"Assigning word {primeraPal} to variable {primerVar.getNombre()}")
 
-        print()
-        print("AUX: ", aux)
-        print()
-        if primerVar == variables[-1]:
-            return True
-        if forward(primerVar,tablero):
-            aux = aux +1 #La primera variable seria 1
-            
-            if(FC(variables[1:],aux,tablero)):
+        if forward(primerVar, tablero):
+            if FC(variables[1:], aux + 1, tablero):
                 return True
             else:
-                rest=restaura(primerVar)
-            
-                
+                restaura(primerVar)
         else:
-            print()
-            print("FORWARD FALSE")
-            print()
-            rest=restaura(primerVar)
-            dominioo = primerVar.getDominio()  # Obten la lista de dominio
-            dominioo.remove(primeraPal)
-            primerVar.getBorradasFC().append(primeraPal)
-            
-        
-    
-        
-    if aux !=0: #Si no es la primera variable
-        print("JAJAN'T")
+            restaura(primerVar)
+
+        dominio = primerVar.getDominio()
+        dominio.remove(primeraPal)
+        primerVar.getBorradasFC().append(primeraPal)
+        print(f"Updated domain after removal: {dominio}")
+
+    if aux != 0:
         primerVar.setDominio(primerVar.getBorradasFC())
         primerVar.getBorradasFC().clear()
-        
+
     return False
-        
-        
+
         
        
 
