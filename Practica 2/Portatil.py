@@ -72,7 +72,7 @@ class AdaboostMulticlase:
         self.classifiers = []
         for i in range(10):
             print(f"Entrenando clasificador para la clase {i}")
-            X_balanced, y_balanced = balance_data(X, y, i)
+            X_balanced, y_balanced = self.balance_data(X, y, i)
             classifier = AdaboostBinario(T=self.T, A=self.A)
             classifier.fit(X_balanced, y_balanced)
             self.classifiers.append(classifier)
@@ -80,6 +80,15 @@ class AdaboostMulticlase:
     def predict(self, X):
         clf_preds = np.array([classifier.predict(X) for classifier in self.classifiers])
         return np.argmax(clf_preds, axis=0)
+    
+    def balance_data(self, X, y, class_label):
+        pos_idx = np.where(y == class_label)[0]
+        neg_idx = np.where(y != class_label)[0]
+        np.random.shuffle(neg_idx)
+        neg_idx = neg_idx[:len(pos_idx)]
+        new_idx = np.concatenate([pos_idx, neg_idx])
+        np.random.shuffle(new_idx)
+        return X[new_idx], np.where(y[new_idx] == class_label, 1, -1)
 
 # Cargar el dataset MNIST
 def load_MNIST_for_adaboost():
@@ -89,128 +98,6 @@ def load_MNIST_for_adaboost():
     Y_train = Y_train.astype("int8")
     Y_test = Y_test.astype("int8")
     return X_train, Y_train, X_test, Y_test
-
-# Balancear los datos para una clase específica
-def balance_data(X, y, class_label):
-    pos_idx = np.where(y == class_label)[0]
-    neg_idx = np.where(y != class_label)[0]
-    np.random.shuffle(neg_idx)
-    neg_idx = neg_idx[:len(pos_idx)]
-    new_idx = np.concatenate([pos_idx, neg_idx])
-    np.random.shuffle(new_idx)
-    return X[new_idx], np.where(y[new_idx] == class_label, 1, -1)
-
-# Entrenar y evaluar Adaboost para todas las clases
-def train_and_evaluate_adaboost():
-    X_train, Y_train, X_test, Y_test = load_MNIST_for_adaboost()
-
-    classifiers = []
-    for i in range(10):
-        print(f"Entrenando clasificador para la clase {i}")
-        X_balanced, y_balanced = balance_data(X_train, Y_train, i)
-        classifier = AdaboostBinario(T=10, A=10)
-        classifier.fit(X_balanced, y_balanced)
-        classifiers.append(classifier)
-
-    for i in range(10):
-        print(f"Evaluando clasificador para la clase {i}")
-        y_test_binary = np.where(Y_test == i, 1, -1)
-        y_pred = classifiers[i].predict(X_test)
-        accuracy = np.mean(y_pred == y_test_binary)
-        print(f"Tasa de acierto para la clase {i}: {accuracy:.4f}")
-        cm = confusion_matrix(y_test_binary, y_pred)
-        print(f"Matriz de confusión para la clase {i}:\n{cm}")
-
-# Experimentar con los parámetros T y A y graficar los resultados
-def experiment_with_parameters():
-    X_train, Y_train, X_test, Y_test = load_MNIST_for_adaboost()
-
-    T_values = [1, 5, 10, 20]
-    A_values = [1, 5, 10, 20]
-
-    results_T_fixed = []
-    results_A_fixed = []
-
-    for T in T_values:
-        accs = []
-        times = []
-        for _ in range(5):  # Ejecutar 5 veces para promediar
-            start_time = time.time()
-            classifier = AdaboostBinario(T=T, A=10)
-            X_balanced, y_balanced = balance_data(X_train, Y_train, 0)
-            classifier.fit(X_balanced, y_balanced)
-            y_test_binary = np.where(Y_test == 0, 1, -1)
-            y_pred = classifier.predict(X_test)
-            accuracy = accuracy_score(y_test_binary, y_pred)
-            accs.append(accuracy)
-            times.append(time.time() - start_time)
-        results_T_fixed.append((T, np.mean(accs), np.mean(times)))
-
-    for A in A_values:
-        accs = []
-        times = []
-        for _ in range(5):  # Ejecutar 5 veces para promediar
-            start_time = time.time()
-            classifier = AdaboostBinario(T=10, A=A)
-            X_balanced, y_balanced = balance_data(X_train, Y_train, 0)
-            classifier.fit(X_balanced, y_balanced)
-            y_test_binary = np.where(Y_test == 0, 1, -1)
-            y_pred = classifier.predict(X_test)
-            accuracy = accuracy_score(y_test_binary, y_pred)
-            accs.append(accuracy)
-            times.append(time.time() - start_time)
-        results_A_fixed.append((A, np.mean(accs), np.mean(times)))
-
-    # Gráficas
-    plt.figure(figsize=(12, 6))
-    
-    # T fijo y variando A
-    plt.subplot(1, 2, 1)
-    A_vals, accs, times = zip(*results_A_fixed)
-    plt.plot(A_vals, accs, label='Accuracy')
-    plt.plot(A_vals, times, label='Execution Time')
-    plt.xlabel('A')
-    plt.ylabel('Value')
-    plt.title('T fixed at 10, varying A')
-    plt.legend()
-
-    # A fijo y variando T
-    plt.subplot(1, 2, 2)
-    T_vals, accs, times = zip(*results_T_fixed)
-    plt.plot(T_vals, accs, label='Accuracy')
-    plt.plot(T_vals, times, label='Execution Time')
-    plt.xlabel('T')
-    plt.ylabel('Value')
-    plt.title('A fixed at 10, varying T')
-    plt.legend()
-
-    plt.tight_layout()
-    plt.show()
-
-    # Exploración de combinaciones
-    best_accuracy = 0
-    best_T = None
-    best_A = None
-    for T in range(1, 61):
-        for A in range(1, 61):
-            if T * A > 3600:
-                continue
-            accs = []
-            for _ in range(5):
-                classifier = AdaboostBinario(T=T, A=A)
-                X_balanced, y_balanced = balance_data(X_train, Y_train, 0)
-                classifier.fit(X_balanced, y_balanced)
-                y_test_binary = np.where(Y_test == 0, 1, -1)
-                y_pred = classifier.predict(X_test)
-                accuracy = accuracy_score(y_test_binary, y_pred)
-                accs.append(accuracy)
-            avg_accuracy = np.mean(accs)
-            if avg_accuracy > best_accuracy:
-                best_accuracy = avg_accuracy
-                best_T = T
-                best_A = A
-
-    print(f"Best combination T={best_T}, A={best_A} with accuracy={best_accuracy}")
 
 # Función para entrenar y evaluar el Adaboost multiclase
 def train_and_evaluate_adaboost_multiclase():
@@ -225,7 +112,7 @@ def train_and_evaluate_adaboost_multiclase():
     cm = confusion_matrix(Y_test, y_pred)
     print(f"Matriz de confusión para el clasificador multiclase:\n{cm}")
 
-# Experimentar con los parámetros T y A para el clasificador multiclase
+# Función de experimentación para Adaboost multiclase
 def experiment_with_parameters_multiclase():
     X_train, Y_train, X_test, Y_test = load_MNIST_for_adaboost()
 
@@ -238,7 +125,7 @@ def experiment_with_parameters_multiclase():
     for T in T_values:
         accs = []
         times = []
-        for _ in range(5):  # Ejecutar 5 veces para promediar
+        for _ in range(3):  # Ejecutar 3 veces para promediar
             start_time = time.time()
             classifier = AdaboostMulticlase(T=T, A=10)
             classifier.fit(X_train, Y_train)
@@ -251,7 +138,7 @@ def experiment_with_parameters_multiclase():
     for A in A_values:
         accs = []
         times = []
-        for _ in range(5):  # Ejecutar 5 veces para promediar
+        for _ in range(3):  # Ejecutar 3 veces para promediar
             start_time = time.time()
             classifier = AdaboostMulticlase(T=10, A=A)
             classifier.fit(X_train, Y_train)
@@ -287,39 +174,18 @@ def experiment_with_parameters_multiclase():
     plt.tight_layout()
     plt.show()
 
-    # Exploración de combinaciones
-    best_accuracy = 0
-    best_T = None
-    best_A = None
-    for T in range(1, 61):
-        for A in range(1, 61):
-            if T * A > 3600:
-                continue
-            accs = []
-            for _ in range(5):
-                classifier = AdaboostMulticlase(T=T, A=A)
-                classifier.fit(X_train, Y_train)
-                y_pred = classifier.predict(X_test)
-                accuracy = accuracy_score(Y_test, y_pred)
-                accs.append(accuracy)
-            avg_accuracy = np.mean(accs)
-            if avg_accuracy > best_accuracy:
-                best_accuracy = avg_accuracy
-                best_T = T
-                best_A = A
-
-    print(f"Best combination for Multiclase T={best_T}, A={best_A} with accuracy={best_accuracy}")
-
-# Función principal que ejecuta ambos experimentos
+# Función principal que ejecuta el experimento
 def main():
+    
     # Primero entrenamos y evaluamos los clasificadores (Parte 1A)
-    train_and_evaluate_adaboost()
+    #train_and_evaluate_adaboost()
     # Luego hacemos los experimentos con los parámetros T y A (Parte 1B)
-    experiment_with_parameters()
-    # Ahora entrenamos y evaluamos el clasificador multiclase (Parte 1C)
+    #experiment_with_parameters()
+    #Parte 1C
     train_and_evaluate_adaboost_multiclase()
-    # Finalmente, hacemos los experimentos con los parámetros T y A para el multiclase (Parte 1C)
     experiment_with_parameters_multiclase()
+    
+    print("FIN")
 
 if __name__ == "__main__":
     main()
