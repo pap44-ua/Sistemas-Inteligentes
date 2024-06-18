@@ -67,14 +67,22 @@ def FC(variables, aux, tablero):
 
 def start(almacen, tablero, varHor, varVer):
     print("Initializing Forward Checking")
+    
+    # Proceso de inicialización de dominios y restricciones
     for var in varHor:
         pos = busca(almacen, var.longitud())
         var.setDominio(almacen[pos].getLista())
+        
+        # Actualizar dominio según las letras preinsertadas
+        for i in range(var.coorInicio[1], var.coorFin[1] + 1):
+            letra = tablero.getCelda(var.coorInicio[0], i)
+            if letra != VACIA and letra != LLENA:
+                var.dominio = [palabra for palabra in var.getDominio() if palabra[i - var.coorInicio[1]] == letra]
+                print(f"Updated domain for {var.getNombre()} considering letter '{letra}': {var.getDominio()}")
 
         for a in range(var.coorInicio[1], var.coorFin[1] + 1):
             coorBusq = (var.coorInicio[0], a)
             varY = buscarVar(varVer, coorBusq)
-
             if varY.getCoorIni() == (-1, -1):
                 continue
 
@@ -89,10 +97,16 @@ def start(almacen, tablero, varHor, varVer):
         pos = busca(almacen, var.longitud())
         var.setDominio(almacen[pos].getLista())
 
+        # Actualizar dominio según las letras preinsertadas
+        for i in range(var.coorInicio[0], var.coorFin[0] + 1):
+            letra = tablero.getCelda(i, var.coorInicio[1])
+            if letra != VACIA and letra != LLENA:
+                var.dominio = [palabra for palabra in var.getDominio() if palabra[i - var.coorInicio[0]] == letra]
+                print(f"Updated domain for {var.getNombre()} considering letter '{letra}': {var.getDominio()}")
+
         for a in range(var.coorInicio[0], var.coorFin[0] + 1):
             coorBusq = (a, var.coorInicio[1])
             varY = buscarVar(varHor, coorBusq)
-
             if varY.getCoorIni() == (-1, -1):
                 continue
 
@@ -104,6 +118,7 @@ def start(almacen, tablero, varHor, varVer):
                 print(f"Added restriction between {var.getNombre()} and {varY.getNombre()} at {coorBusq}")
 
     variables = varHor + varVer  # Procesar ambas variables
+
     fc = FC(variables, 0, tablero)
     print("FORWARD CHECKING", fc)
 
