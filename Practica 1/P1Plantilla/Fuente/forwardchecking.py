@@ -1,30 +1,24 @@
 from main import *
-
 from tablero import *
 from dominio import *
 from variable import *
 from restriccion import *
 
-#Me falta tener en cuenta una variable de que solo sea una letra
-
-
-
-from variable import Variable
-from tablero import Tablero
-
 def forward(var: Variable, tablero: Tablero) -> bool:
-    print(f"Forward checking for variable: {var.getNombre()}")
+    print(f"Forward checking for variable: {var.getNombre()} ({var.getCoorIni()} -> {var.getCoorFin()})")
     for res in var.getRestriccion():
         dominio = res.getY().getDominio().copy()
-        print(f"Initial domain for {res.getY().getNombre()}: {dominio}")
+        print(f"Initial domain for {res.getY().getNombre()} ({res.getY().getCoorIni()} -> {res.getY().getCoorFin()}): {dominio}")
+        index_var = res.coor[1] if var.horizontal() else res.coor[0]
+        index_res = res.coor[0] if var.horizontal() else res.coor[1]
         for dom in dominio:
-            # Ajusta el índice para verificar la posición correcta del carácter
-            if dom[abs(res.varY.coorInicio[0] - res.coor[0])] != var.getPalabra()[res.coor[1]]:
+            if dom[index_res] != var.getPalabra()[index_var]:
                 res.getY().getBorradas().append((dom, var.getNombre()))
                 res.getY().getDominio().remove(dom)
-                print(f"Updated domain for {res.getY().getNombre()}: {res.getY().getDominio()}")
+                print(f"Updated domain for {res.getY().getNombre()} after removing {dom}: {res.getY().getDominio()}")
 
         if not res.getY().getDominio():
+            print(f"Domain of variable {res.getY().getNombre()} is empty after forward checking.")
             return False
     return True
 
@@ -38,7 +32,6 @@ def restaura(var: Variable):
                 res.getY().getBorradas().remove(elemento)
                 print(f"Restored domain for {res.getY().getNombre()}: {res.getY().getDominio()}")
     var.setPalabra("")
-
 
 def FC(variables, aux, tablero):
     print("Starting Forward Checking")
@@ -72,106 +65,62 @@ def FC(variables, aux, tablero):
 
     return False
 
-        
-       
+def start(almacen, tablero, varHor, varVer):
+    print("Initializing Forward Checking")
+    for var in varHor:
+        pos = busca(almacen, var.longitud())
+        var.setDominio(almacen[pos].getLista())
 
+        for a in range(var.coorInicio[1], var.coorFin[1] + 1):
+            coorBusq = (var.coorInicio[0], a)
+            varY = buscarVar(varVer, coorBusq)
 
-def start(almacen,tablero,varHor, varVer):
-    
-    #aux=0
-    #palabras=[]
+            if varY.getCoorIni() == (-1, -1):
+                continue
 
-    #Guardamos todos los dominios en sus variables
-
-    for var in varHor: #Establecemos todas las variables Horizontales
-
-        pos=busca(almacen,var.longitud())
-# 
-        var.setDominio(almacen[pos].getLista())        
-
-        for a in range(var.coorInicio[1], var.coorFin[1]+1):
-
-            coorBusq=(var.coorInicio[0],a)
-
-            varY=buscarVar(varVer,coorBusq)
-
-            if(var.coorInicio[0]==-1):
-                break
-            
-            newRestriccion=Restriccion(varY,(coorBusq[0],coorBusq[1]-var.coorInicio[1]) ) #Comprobar que esto se hace como quiero
-            
-
+            newRestriccion = Restriccion(varY, (coorBusq[0] - varY.getCoorIni()[0], coorBusq[1] - var.getCoorIni()[1]))
             if newRestriccion.getY().getNombre() != -1:
-                
-#                 print()
-#                 print("HORIZONTAL")
-#                 print("NOMBRE:", var.getNombre())
-#                 print("Restriccion")
-#     #             print (newRestriccion.getPosX())
-#                 print("NOMBRE:", newRestriccion.getY().getNombre())
-#                 
                 restricciones = var.getRestriccion()
                 restricciones.append(newRestriccion)
                 var.setRestriccion(restricciones)
-                
+                print(f"Added restriction between {var.getNombre()} and {varY.getNombre()} at {coorBusq}")
 
-      
-    for var in varVer: #Establecemos todas las variables Verticales
+    for var in varVer:
+        pos = busca(almacen, var.longitud())
+        var.setDominio(almacen[pos].getLista())
 
-        pos=busca(almacen,var.longitud())
+        for a in range(var.coorInicio[0], var.coorFin[0] + 1):
+            coorBusq = (a, var.coorInicio[1])
+            varY = buscarVar(varHor, coorBusq)
 
-        dominio=almacen[pos].getLista()
-        var.setDominio(dominio)        
+            if varY.getCoorIni() == (-1, -1):
+                continue
 
+            newRestriccion = Restriccion(varY, (coorBusq[0] - var.getCoorIni()[0], coorBusq[1] - varY.getCoorIni()[1]))
+            if newRestriccion.getY().getNombre() != -1:
+                restricciones = var.getRestriccion()
+                restricciones.append(newRestriccion)
+                var.setRestriccion(restricciones)
+                print(f"Added restriction between {var.getNombre()} and {varY.getNombre()} at {coorBusq}")
 
-        for a in range(var.coorInicio[0], var.coorFin[0]+1):
-#             print("VERTICAL")
-#             print("el nombre de la variable de ahora",var.nombre)
-#             print("El dominio",var.getDominio())
-#             print("a la posicion que le toca")
-#             print(a)
-#             print("coorInicio variable")
-#             print(var.coorInicio)
-#             
-            coorBusq=(a,var.coorInicio[1])
-
-            varY=buscarVar(varHor,coorBusq)
-            
-            
-            if(varY.coorInicio[0]==-1):
-                break
-            newRestriccion=Restriccion(varY,(coorBusq[0]-var.coorInicio[0],coorBusq[1])) #Comprobar que esto se hace como quiero
-
-            if (newRestriccion.getY().getNombre()!=-1):
-                restricciones = var.getRestriccion()  # Obtener la lista actual de restricciones
-                restricciones.append(newRestriccion)  # Agregar la nueva restricción a la lista existente
-                var.setRestriccion(restricciones)  # Asignar la lista modificada de restricciones a la variable
-            
-
-
-    variables = []
-    variables.extend(varHor)
-#     variables.extend(varVer)
-            
-    fc = FC(variables,0,tablero)
+    variables = varHor + varVer  # Procesar ambas variables
+    fc = FC(variables, 0, tablero)
     print("FORWARD CHECKING", fc)
-#Si todo va bn imprimimos
-    if(fc):
-        for var in varHor:
-            fila,columna = var.getCoorIni()
-            for a in range(var.longitud()):
-                tablero.setCelda(fila,columna+a,var.getPalabra()[a])
 
+    if fc:
+        for var in varHor:
+            fila, columna = var.getCoorIni()
+            for a in range(var.longitud()):
+                tablero.setCelda(fila, columna + a, var.getPalabra()[a])
+        for var in varVer:
+            fila, columna = var.getCoorIni()
+            for a in range(var.longitud()):
+                tablero.setCelda(fila + a, columna, var.getPalabra()[a])
 
     return fc
-    
-    
+
 def imprimirTablero(tablero):
     for fila in range(tablero.getAlto()):
         for col in range(tablero.getAncho()):
-            # Imprimir la celda y un espacio en la misma línea
             print(f"{tablero.getCelda(fila, col)} ", end="")
-        # Saltar a la siguiente línea después de imprimir todas las celdas de la fila
         print()
-
-    
