@@ -8,6 +8,7 @@ from dominio import *
 from variable import *
 from pygame.locals import *
 from forwardchecking import *
+from AC3 import *
 
 GREY=(190, 190, 190)
 NEGRO=(100,100, 100)
@@ -214,7 +215,15 @@ def buscarVar(listaVar, coorBusq): #Falta implementar que si las variables son h
                 return palabra
     return Variable((-1,-1),(-1,-1),-1)
     
-
+def crearRestricciones(varHor, varVer):
+    for var in varHor:
+        for col in range(var.getCoorIni()[1], var.getCoorFin()[1] + 1):
+            fila = var.getCoorIni()[0]
+            for var_v in varVer:
+                if var_v.getCoorIni()[0] <= fila <= var_v.getCoorFin()[0] and col == var_v.getCoorIni()[1]:
+                    var.getRestriccion().append(Restriccion(var_v, (fila, col)))
+                    var_v.getRestriccion().append(Restriccion(var, (fila, col)))
+                    print(f"Created restriction between {var.getNombre()} and {var_v.getNombre()} at ({fila}, {col})")
 
 
 #########################################################################  
@@ -280,6 +289,32 @@ def main():
                         MessageBox.showwarning("Alerta", "No hay solución")                                  
                 elif pulsaBotonAC3(pos, anchoVentana, altoVentana):                    
                      print("AC3")
+                     varHor, ID = sacarVariablesHor(tablero, ID)
+                     varVer, ID = sacarVariablesVer(tablero, ID)
+                     crearRestricciones(varHor, varVer)  # Crear restricciones entre variables
+                     variables = varHor + varVer
+
+                    # Inicializar dominios
+                     for var in variables:
+                         tam = var.longitud()
+                         pos = busca(almacen, tam)
+                         if pos != -1:
+                             var.setDominio(almacen[pos].getLista())
+
+                     print("DOMINIOS ANTES DEL AC3:")
+                     for var in variables:
+                         print(f"Variable {var.getNombre()} ({var.getCoorIni()} -> {var.getCoorFin()}): {var.getDominio()}")
+
+                     result = AC3(variables)
+
+                     print("DOMINIOS DESPUÉS DEL AC3:")
+                     for var in variables:
+                         print(f"Variable {var.getNombre()} ({var.getCoorIni()} -> {var.getCoorFin()}): {var.getDominio()}")
+
+                     if result:
+                         print("AC3 successfully reduced the domains.")
+                     else:
+                         MessageBox.showwarning("Alerta", "No hay solución")
                 elif pulsaBotonReset(pos, anchoVentana, altoVentana):                   
                     tablero.reset()
                     ID=0
