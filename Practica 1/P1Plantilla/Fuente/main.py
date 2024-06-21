@@ -280,6 +280,9 @@ def main():
                         MessageBox.showwarning("Alerta", "No hay solución")                                  
                 elif pulsaBotonAC3(pos, anchoVentana, altoVentana):                    
                      print("AC3")
+                     varHor,ID= sacarVariablesHor(tablero,ID)
+                     varVer,ID=sacarVariablesVer(tablero,ID)
+                     start_ac3(almacen, tablero, varHor, varVer)
                 elif pulsaBotonReset(pos, anchoVentana, altoVentana):                   
                     tablero.reset()
                     ID=0

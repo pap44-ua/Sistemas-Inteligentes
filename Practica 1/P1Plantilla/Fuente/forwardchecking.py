@@ -4,6 +4,130 @@ from dominio import *
 from variable import *
 from restriccion import *
 
+from collections import deque
+
+
+def start_ac3(almacen, tablero, varHor, varVer):
+    print("Initializing AC3")
+    
+    # Proceso de inicialización de dominios y restricciones
+    for var in varHor:
+        pos = busca(almacen, var.longitud())
+        var.setDominio(almacen[pos].getLista())
+        
+        # Actualizar dominio según las letras preinsertadas
+        for i in range(var.coorInicio[1], var.coorFin[1] + 1):
+            letra = tablero.getCelda(var.coorInicio[0], i)
+            if letra != VACIA and letra != LLENA:
+                var.dominio = [palabra for palabra in var.getDominio() if palabra[i - var.coorInicio[1]] == letra]
+                print(f"Updated domain for {var.getNombre()} considering letter '{letra}': {var.getDominio()}")
+
+        for a in range(var.coorInicio[1], var.coorFin[1] + 1):
+            coorBusq = (var.coorInicio[0], a)
+            varY = buscarVar(varVer, coorBusq)
+            if varY.getCoorIni() == (-1, -1):
+                continue
+
+            newRestriccion = Restriccion(varY, (coorBusq[0] - varY.getCoorIni()[0], coorBusq[1] - var.getCoorIni()[1]))
+            if newRestriccion.getY().getNombre() != -1:
+                restricciones = var.getRestriccion()
+                restricciones.append(newRestriccion)
+                var.setRestriccion(restricciones)
+                print(f"Added restriction between {var.getNombre()} and {varY.getNombre()} at {coorBusq}")
+
+    for var in varVer:
+        pos = busca(almacen, var.longitud())
+        var.setDominio(almacen[pos].getLista())
+
+        # Actualizar dominio según las letras preinsertadas
+        for i in range(var.coorInicio[0], var.coorFin[0] + 1):
+            letra = tablero.getCelda(i, var.coorInicio[1])
+            if letra != VACIA and letra != LLENA:
+                var.dominio = [palabra for palabra in var.getDominio() if palabra[i - var.coorInicio[0]] == letra]
+                print(f"Updated domain for {var.getNombre()} considering letter '{letra}': {var.getDominio()}")
+
+        for a in range(var.coorInicio[0], var.coorFin[0] + 1):
+            coorBusq = (a, var.coorInicio[1])
+            varY = buscarVar(varHor, coorBusq)
+            if varY.getCoorIni() == (-1, -1):
+                continue
+
+            newRestriccion = Restriccion(varY, (coorBusq[0] - var.getCoorIni()[0], coorBusq[1] - varY.getCoorIni()[1]))
+            if newRestriccion.getY().getNombre() != -1:
+                restricciones = var.getRestriccion()
+                restricciones.append(newRestriccion)
+                var.setRestriccion(restricciones)
+                print(f"Added restriction between {var.getNombre()} and {varY.getNombre()} at {coorBusq}")
+
+    variables = varHor + varVer  # Procesar ambas variables
+
+    print_domains(variables, "Dominios antes de AC3:")
+    ac3_result = AC3(variables)
+    print_domains(variables, "Dominios después de AC3:")
+
+    if ac3_result:
+        print("AC3 completed successfully.")
+    else:
+        print("AC3 failed. No solution.")
+
+    return ac3_result
+
+def AC3(variables):
+    print_domains(variables, "Dominios antes de AC3:")
+    queue = deque()
+    
+    for var in variables:
+        for res in var.getRestriccion():
+            queue.append((var, res.getY()))
+    
+    while queue:
+        (xi, xj) = queue.popleft()
+        if revise(xi, xj):
+            if not xi.getDominio():
+                return False
+            for res in xi.getRestriccion():
+                if res.getY() != xj:
+                    queue.append((res.getY(), xi))
+
+    print_domains(variables, "Dominios después de AC3:")
+    return True
+
+def revise(xi, xj):
+    revised = False
+    for x in xi.getDominio()[:]:
+        if not any(satisfies(x, y, xi, xj) for y in xj.getDominio()):
+            xi.getDominio().remove(x)
+            revised = True
+    return revised
+
+def satisfies(x, y, xi, xj):
+    index_x = xi.getRestriccion()[0].coor[1] if xi.horizontal() else xi.getRestriccion()[0].coor[0]
+    index_y = xj.getRestriccion()[0].coor[0] if xi.horizontal() else xj.getRestriccion()[0].coor[1]
+    return x[index_x] == y[index_y]
+
+def print_domains(variables, message=""):
+    print(message)
+    for var in variables:
+        print(f"Variable {var.getNombre()} ({var.getCoorIni()} -> {var.getCoorFin()}): {var.getDominio()}")
+    print("\n")
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 def forward(var: Variable, tablero: Tablero) -> bool:
     print(f"Forward checking for variable: {var.getNombre()} ({var.getCoorIni()} -> {var.getCoorFin()})")
     for res in var.getRestriccion():
