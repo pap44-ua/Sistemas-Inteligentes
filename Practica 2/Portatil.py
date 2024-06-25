@@ -237,69 +237,55 @@ def experiment_with_parameters_multiclase():
     plt.tight_layout()
     plt.show()
 
-def train_and_evaluate_sklearn_adaboost():
-    print("ENTRA SKLEARN")
-    X_train, Y_train, X_test, Y_test = load_MNIST_for_adaboost()
+def train_and_evaluate_sklearn_adaboost(X_train, y_train, X_test, y_test, n_estimators=50, max_depth=1, max_features=None):
+    """
+    Entrena un clasificador AdaboostClassifier utilizando DecisionTreeClassifier con la configuración dada
+    y evalúa su rendimiento en el conjunto de prueba.
+    """
+    # Crear el clasificador débil (Decision Stump)
+    base_estimator = DecisionTreeClassifier(max_depth=max_depth, max_features=max_features)
     
-    # Crear el clasificador Adaboost con DecisionTreeClassifier con profundidad 1 (equivalente a DecisionStump)
-    weak_classifier = DecisionTreeClassifier(max_depth=1)
-    adaboost = AdaBoostClassifier(estimator=weak_classifier, n_estimators=50, algorithm="SAMME")
-
-    adaboost.fit(X_train, Y_train)
+    # Crear el clasificador Adaboost usando el algoritmo SAMME
+    adaboost = AdaBoostClassifier(estimator=base_estimator, n_estimators=n_estimators, algorithm='SAMME')
     
-    # Predecir y evaluar
+    # Entrenar el clasificador
+    adaboost.fit(X_train, y_train)
+    
+    # Predecir en el conjunto de prueba
     y_pred = adaboost.predict(X_test)
-    accuracy = accuracy_score(Y_test, y_pred)
-    print(f"Tasa de acierto para AdaboostClassifier de sklearn: {accuracy:.4f}")
-    cm = confusion_matrix(Y_test, y_pred)
-    print(f"Matriz de confusión para AdaboostClassifier de sklearn:\n{cm}")
+    
+    # Calcular y devolver la precisión
+    accuracy = accuracy_score(y_test, y_pred)
+    print(f"Accuracy: {accuracy}")
+    return accuracy
 
-def experiment_with_sklearn_adaboost_parameters():
-    print("Experimentando con parámetros para sklearn Adaboost")
-    X_train, Y_train, X_test, Y_test = load_MNIST_for_adaboost()
-
-    T_values = [10, 50, 100]  # Valores para n_estimators
-    learning_rates = [0.01, 0.1, 1.0]  # Valores para learning_rate
-
+def experiment_with_sklearn_adaboost_parameters(X_train, y_train, X_test, y_test):
+    """
+    Experimenta con diferentes configuraciones de parámetros para el clasificador Adaboost
+    y busca la mejor tasa de acierto posible.
+    """
     best_accuracy = 0
-    best_T = None
-    best_lr = None
-
-    results = []
-
-    for T in T_values:
-        for lr in learning_rates:
-            start_time = time.time()
-            weak_classifier = DecisionTreeClassifier(max_depth=1)
-            adaboost = AdaBoostClassifier(estimator=weak_classifier, n_estimators=T, learning_rate=lr, algorithm="SAMME")
-            adaboost.fit(X_train, Y_train)
-            
-            y_pred = adaboost.predict(X_test)
-            accuracy = accuracy_score(Y_test, y_pred)
-            elapsed_time = time.time() - start_time
-            
-            results.append((T, lr, accuracy, elapsed_time))
-            if accuracy > best_accuracy:
-                best_accuracy = accuracy
-                best_T = T
-                best_lr = lr
-
-    print(f"Mejor combinación T={best_T}, learning_rate={best_lr} con tasa de acierto={best_accuracy:.4f}")
-
-    # Gráficas de resultados
-    plt.figure(figsize=(12, 6))
-
-    # Gráfica de Accuracy
-    plt.subplot(1, 2, 1)
-    T_vals, lr_vals, accuracies, _ = zip(*results)
-    plt.scatter(T_vals, lr_vals, c=accuracies, cmap='viridis')
-    plt.colorbar(label='Precision')
-    plt.xlabel('n_estimators')
-    plt.ylabel('learning_rate')
-    plt.title('Precision para diferentes n_estimators y learning_rate')
-
-    plt.tight_layout()
-    plt.show()
+    best_params = {}
+    
+    # Experimentar con diferentes valores de n_estimators y max_depth
+    for n_estimators in [10, 50, 100]:
+        for max_depth in [1]:  # max_depth=1 para simular un Decision Stump
+            for max_features in [None, 'sqrt', 'log2']:
+                print(f"Evaluating: n_estimators={n_estimators}, max_depth={max_depth}, max_features={max_features}")
+                accuracy = train_and_evaluate_sklearn_adaboost(X_train, y_train, X_test, y_test,
+                                                               n_estimators=n_estimators, max_depth=max_depth,
+                                                               max_features=max_features)
+                if accuracy > best_accuracy:
+                    best_accuracy = accuracy
+                    best_params = {
+                        'n_estimators': n_estimators,
+                        'max_depth': max_depth,
+                        'max_features': max_features
+                    }
+    
+    print(f"Best Accuracy: {best_accuracy}")
+    print(f"Best Parameters: {best_params}")
+    return best_params
 
 
 # Aplicar PCA para reducir dimensionalidad
@@ -434,8 +420,75 @@ def experiment_with_parameters_stop_overfitting():
     plt.tight_layout()
     plt.show()
 
+def train_and_evaluate_sklearn_adaboost_deep_tree(X_train, y_train, X_test, y_test, n_estimators=50, max_depth=3, min_samples_split=2, min_samples_leaf=1, max_features=None):
+    """
+    Entrena un clasificador AdaboostClassifier utilizando DecisionTreeClassifier con la configuración dada
+    y evalúa su rendimiento en el conjunto de prueba.
+    """
+    print(f"Entrenando AdaboostClassifier con n_estimators={n_estimators}, max_depth={max_depth}, min_samples_split={min_samples_split}, min_samples_leaf={min_samples_leaf}, max_features={max_features}")
+    
+    # Crear el clasificador débil (árbol de decisión con profundidad > 0)
+    base_estimator = DecisionTreeClassifier(max_depth=max_depth, min_samples_split=min_samples_split, min_samples_leaf=min_samples_leaf, max_features=max_features)
+    
+    # Crear el clasificador Adaboost usando el algoritmo SAMME
+    adaboost = AdaBoostClassifier(estimator=base_estimator, n_estimators=n_estimators, algorithm='SAMME')
+    
+    # Entrenar el clasificador
+    print("Entrenando el clasificador...")
+    adaboost.fit(X_train, y_train)
+    
+    # Predecir en el conjunto de prueba
+    print("Prediciendo en el conjunto de prueba...")
+    y_pred = adaboost.predict(X_test)
+    
+    # Calcular y devolver la precisión
+    accuracy = accuracy_score(y_test, y_pred)
+    print(f"Precisión obtenida: {accuracy}")
+    return accuracy
+
+def experiment_with_deep_tree_parameters(X_train, y_train, X_test, y_test):
+    """
+    Experimenta con diferentes configuraciones de parámetros para el clasificador Adaboost utilizando árboles de decisión con profundidad > 0
+    y busca la mejor tasa de acierto posible.
+    """
+    print("Comenzando experimentos con diferentes configuraciones de parámetros para AdaboostClassifier con árboles de decisión profundos")
+    best_accuracy = 0
+    best_params = {}
+    
+    # Experimentar con diferentes valores de n_estimators, max_depth, min_samples_split, min_samples_leaf y max_features
+    for n_estimators in [50, 100, 200]:
+        for max_depth in [3, 5, 7]:
+            for min_samples_split in [2, 5, 10]:
+                for min_samples_leaf in [1, 2, 4]:
+                    for max_features in [None, 'sqrt', 'log2']:
+                        print(f"Evaluando configuración: n_estimators={n_estimators}, max_depth={max_depth}, min_samples_split={min_samples_split}, min_samples_leaf={min_samples_leaf}, max_features={max_features}")
+                        accuracy = train_and_evaluate_sklearn_adaboost_deep_tree(X_train, y_train, X_test, y_test,
+                                                                                n_estimators=n_estimators, max_depth=max_depth,
+                                                                                min_samples_split=min_samples_split, min_samples_leaf=min_samples_leaf,
+                                                                                max_features=max_features)
+                        print(f"Precisión para configuración actual: {accuracy}")
+                        if accuracy > best_accuracy:
+                            best_accuracy = accuracy
+                            best_params = {
+                                'n_estimators': n_estimators,
+                                'max_depth': max_depth,
+                                'min_samples_split': min_samples_split,
+                                'min_samples_leaf': min_samples_leaf,
+                                'max_features': max_features
+                            }
+                            print(f"Nueva mejor precisión encontrada: {best_accuracy}")
+                            print(f"Nuevos mejores parámetros: {best_params}")
+    
+    print(f"Mejor precisión obtenida: {best_accuracy}")
+    print(f"Mejores parámetros encontrados: {best_params}")
+    return best_params, best_accuracy
+
+
 
 def main():
+    
+    X_train, Y_train, X_test, Y_test = load_MNIST_for_adaboost()
+    
     # Primero entrenamos y evaluamos los clasificadores (Parte 1A)
 #     train_and_evaluate_adaboost()
     
@@ -455,12 +508,12 @@ def main():
 #     experiment_with_parameters_stop_overfitting()
     
     # Parte 2A
-    train_and_evaluate_sklearn_adaboost()
-    experiment_with_sklearn_adaboost_parameters()
+#     train_and_evaluate_sklearn_adaboost(X_train, Y_train, X_test, Y_test)
+#     experiment_with_sklearn_adaboost_parameters(X_train, Y_train, X_test, Y_test)
     
         # Parte 2B
-#     best_params, best_accuracy = experiment_with_deep_tree_parameters()
-#     print(f"Mejores parámetros recomendados: {best_params} con tasa de acierto={best_accuracy:.4f}")
+    best_params_2b, best_accuracy_2b = experiment_with_deep_tree_parameters(X_train, Y_train, X_test, Y_test)
+    print(f"Mejores parámetros recomendados: {best_params_2b} con tasa de acierto={best_accuracy_2b:.4f}")
     
     print("FIN")
 
