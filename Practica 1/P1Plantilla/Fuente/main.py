@@ -16,8 +16,8 @@ BLANCO=(255, 255, 255)
 MARGEN=5 #ancho del borde entre celdas
 MARGEN_INFERIOR=60 #altura del margen inferior entre la cuadrícula y la ventana
 TAM=60  #tamaño de la celda
-FILS=2 #5 # número de filas del crucigrama
-COLS=2#6 # número de columnas del crucigrama
+FILS=3 #5 # número de filas del crucigrama
+COLS=3#6 # número de columnas del crucigrama
 
 
 
@@ -257,7 +257,7 @@ def main():
                 #obtener posición y calcular coordenadas matriciales                               
                 pos=pygame.mouse.get_pos()                
                 if pulsaBotonFC(pos, anchoVentana, altoVentana): #Aqui hace el FC
-                    print("FC")
+#                     print("FC")
                     varHor,ID= sacarVariablesHor(tablero,ID)
                     varVer,ID=sacarVariablesVer(tablero,ID)
                     
@@ -279,7 +279,7 @@ def main():
                     if res==False:
                         MessageBox.showwarning("Alerta", "No hay solución")                                  
                 elif pulsaBotonAC3(pos, anchoVentana, altoVentana):                    
-                     print("AC3")
+#                      print("AC3")
                      varHor,ID= sacarVariablesHor(tablero,ID)
                      varVer,ID=sacarVariablesVer(tablero,ID)
                      start_ac3(almacen, tablero, varHor, varVer)
