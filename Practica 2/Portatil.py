@@ -7,6 +7,10 @@ import time
 from sklearn.ensemble import AdaBoostClassifier
 from sklearn.tree import DecisionTreeClassifier
 from sklearn.decomposition import PCA
+from keras.models import Sequential
+from keras.layers import Dense, Dropout
+from keras.optimizers import SGD, Adam
+from keras.layers import Conv2D, MaxPooling2D, Flatten
 
 # Clase para el Decision Stump
 class DecisionStump:
@@ -157,6 +161,128 @@ def balance_data(X, y, class_label):
     np.random.shuffle(new_idx)
     return X[new_idx], np.where(y[new_idx] == class_label, 1, -1)
 
+
+def train_and_evaluate_adaboost():
+    print("Entrenando y evaluando Adaboost binario")
+    X_train, Y_train, X_test, Y_test = load_MNIST_for_adaboost()
+
+    classifiers = []
+    for i in range(10):
+        print(f"Entrenando clasificador para la clase {i}")
+        X_balanced, y_balanced = balance_data(X_train, Y_train, i)
+        classifier = AdaboostBinario(T=50, A=70)
+        classifier.fit(X_balanced, y_balanced)
+        classifiers.append(classifier)
+
+    for i in range(10):
+        print(f"Evaluando clasificador para la clase {i}")
+        y_test_binary = np.where(Y_test == i, 1, -1)
+        y_pred = classifiers[i].predict(X_test)
+        accuracy = np.mean(y_pred == y_test_binary)
+        print(f"Tasa de acierto para la clase {i}: {accuracy:.4f}")
+        cm = confusion_matrix(y_test_binary, y_pred)
+        print(f"Matriz de confusión para la clase {i}:\n{cm}")
+
+
+
+def experiment_with_parameters():
+    print("Experimentando con parámetros binarios")
+    X_train, Y_train, X_test, Y_test = load_MNIST_for_adaboost()
+    
+    T_values = [10, 40, 70]
+    A_values = [10, 40, 70]
+    
+    results_T_fixed = []
+    results_A_fixed = []
+    start_time_total = time.time()
+    
+    # Experimento con A fijo y T variable
+    for T in T_values:
+        print(f"Probando con T={T} y A=20")
+        accs = []
+        start_time = time.time()
+        for i in range(5):
+            print(f"  Ejecución {i+1}/5")
+            classifier = AdaboostBinario(T=T, A=20)
+            X_balanced, y_balanced = balance_data(X_train, Y_train, 0)
+            classifier.fit(X_balanced, y_balanced)
+            y_test_binary = np.where(Y_test == 0, 1, -1)
+            y_pred = classifier.predict(X_test)
+            accs.append(accuracy_score(y_test_binary, y_pred))
+        end_time = time.time()
+        results_T_fixed.append((end_time - start_time_total, np.mean(accs)))
+        print(f"  Precisión media para T={T}: {np.mean(accs)} en {end_time - start_time_total} segundos")
+
+    # Experimento con T fijo y A variable
+    for A in A_values:
+        print(f"Probando con T=50 y A={A}")
+        accs = []
+        start_time = time.time()
+        for i in range(5):
+            print(f"  Ejecución {i+1}/5")
+            classifier = AdaboostBinario(T=50, A=A)
+            X_balanced, y_balanced = balance_data(X_train, Y_train, 0)
+            classifier.fit(X_balanced, y_balanced)
+            y_test_binary = np.where(Y_test == 0, 1, -1)
+            y_pred = classifier.predict(X_test)
+            accs.append(accuracy_score(y_test_binary, y_pred))
+        end_time = time.time()
+        results_A_fixed.append((end_time - start_time_total, np.mean(accs)))
+        print(f"  Precisión media para A={A}: {np.mean(accs)} en {end_time - start_time_total} segundos")
+    
+    # Exploración de combinaciones
+    best_accuracy = 0
+    best_T = None
+    best_A = None
+    results_combination = []
+
+    print("Explorando combinaciones de T y A...")
+    T_values_comb = [10, 40, 70]
+    A_values_comb = [10, 40, 70]
+    start_time = time.time()
+    for T in T_values_comb:
+        for A in A_values_comb:
+            if T * A > 3600:
+                continue
+            accs = []
+            for i in range(5):
+                classifier = AdaboostBinario(T=T, A=A)
+                X_balanced, y_balanced = balance_data(X_train, Y_train, 0)
+                classifier.fit(X_balanced, y_balanced)
+                y_test_binary = np.where(Y_test == 0, 1, -1)
+                y_pred = classifier.predict(X_test)
+                accs.append(accuracy_score(y_test_binary, y_pred))
+            avg_accuracy = np.mean(accs)
+            results_combination.append((time.time() - start_time_total, avg_accuracy))
+            if avg_accuracy > best_accuracy:
+                best_accuracy = avg_accuracy
+                best_T = T
+                best_A = A
+        print(f"  Combinación T={T} completada")
+
+    print(f"Mejor combinación T={best_T}, A={best_A} con exactitud={best_accuracy}")
+
+    # Gráficas
+    plt.figure(figsize=(12, 6))
+    
+    times_T_fixed, accs_T_fixed = zip(*results_T_fixed)
+    plt.plot(times_T_fixed, accs_T_fixed, label='T fijo en 50, A variable')
+    
+    times_A_fixed, accs_A_fixed = zip(*results_A_fixed)
+    plt.plot(times_A_fixed, accs_A_fixed, label='A fijo en 20, T variable')
+    
+    times_comb, accs_comb = zip(*results_combination)
+    plt.plot(times_comb, accs_comb, label='Combinaciones de T y A')
+
+    plt.xlabel('Tiempo acumulado (segundos)')
+    plt.ylabel('Precisión')
+    plt.title('Comparación de Diferentes Experimentos')
+    plt.legend()
+    plt.tight_layout()
+    plt.show()
+    
+    
+    
 # Cargar el dataset MNIST
 def load_MNIST_for_adaboost():
     print("Cargando el dataset MNIST")
@@ -187,53 +313,87 @@ def experiment_with_parameters_multiclase():
     print("Experimentando con parámetros multiclase")
     X_train, Y_train, X_test, Y_test = load_MNIST_for_adaboost()
 
-    T_values = [  70, 90]  # Ajustados para que T*A <= 3600
-    A_values = [10, 20 ]  # Ajustados para que T*A <= 3600
+    T_values = [10, 40, 70]  # Ajustados para que T*A <= 3600
+    A_values = [10, 40, 70]  # Ajustados para que T*A <= 3600
 
     results_T_fixed = []
     results_A_fixed = []
+    start_time_total = time.time()
 
+    # Experimento con A fijo y T variable
     for T in T_values:
+        print(f"Probando con T={T} y A=20")
         accs = []
-        for _ in range(3):  # Ejecutar 3 veces para promediar
-            classifier = AdaboostMulticlase(T=T, A=20)
+        start_time = time.time()
+        for i in range(5):  # Ejecutar 3 veces para promediar
+            print(f"  Ejecución {i+1}/5")
+            classifier = AdaboostMulticlase(T=T, A=10)
             classifier.fit(X_train, Y_train)
             y_pred = classifier.predict(X_test)
-            accuracy = accuracy_score(Y_test, y_pred)
-            accs.append(accuracy)
-        results_T_fixed.append((T, np.mean(accs)))
+            accs.append(accuracy_score(Y_test, y_pred))
+        end_time = time.time()
+        results_T_fixed.append((end_time - start_time_total, np.mean(accs)))
+        print(f"  Precisión media para T={T}: {np.mean(accs)} en {end_time - start_time_total} segundos")
 
+    # Experimento con T fijo y A variable
     for A in A_values:
+        print(f"Probando con T=50 y A={A}")
         accs = []
-        for _ in range(5):  # Ejecutar 3 veces para promediar
-            classifier = AdaboostMulticlase(T=90, A=A)
+        start_time = time.time()
+        for i in range(5):  # Ejecutar 3 veces para promediar
+            print(f"  Ejecución {i+1}/5")
+            classifier = AdaboostMulticlase(T=20, A=A)
             classifier.fit(X_train, Y_train)
             y_pred = classifier.predict(X_test)
-            accuracy = accuracy_score(Y_test, y_pred)
-            accs.append(accuracy)
-        results_A_fixed.append((A, np.mean(accs)))
+            accs.append(accuracy_score(Y_test, y_pred))
+        end_time = time.time()
+        results_A_fixed.append((end_time - start_time_total, np.mean(accs)))
+        print(f"  Precisión media para A={A}: {np.mean(accs)} en {end_time - start_time_total} segundos")
 
-    # Gráficas de Accuracy
+    # Exploración de combinaciones
+    best_accuracy = 0
+    best_T = None
+    best_A = None
+    results_combination = []
+
+    print("Explorando combinaciones de T y A...")
+    start_time = time.time()
+    for T in T_values:
+        for A in A_values:
+            if T * A > 3600:
+                continue
+            accs = []
+            for i in range(5):
+                classifier = AdaboostMulticlase(T=T, A=A)
+                classifier.fit(X_train, Y_train)
+                y_pred = classifier.predict(X_test)
+                accs.append(accuracy_score(Y_test, y_pred))
+            avg_accuracy = np.mean(accs)
+            results_combination.append((time.time() - start_time_total, avg_accuracy))
+            if avg_accuracy > best_accuracy:
+                best_accuracy = avg_accuracy
+                best_T = T
+                best_A = A
+        print(f"  Combinación T={T} completada")
+
+    print(f"Mejor combinación T={best_T}, A={best_A} con exactitud={best_accuracy}")
+
+    # Gráficas
     plt.figure(figsize=(12, 6))
-    
-    # T fijo y variando A
-    plt.subplot(1, 2, 1)
-    A_vals, accs = zip(*results_A_fixed)
-    plt.plot(A_vals, accs, label='Precision')
-    plt.xlabel('A')
-    plt.ylabel('Precision')
-    plt.title('T ajustado a 50, variando A (Multiclase)')
-    plt.legend()
 
-    # A fijo y variando T
-    plt.subplot(1, 2, 2)
-    T_vals, accs = zip(*results_T_fixed)
-    plt.plot(T_vals, accs, label='Precision')
-    plt.xlabel('T')
-    plt.ylabel('Precision')
-    plt.title('A ajustado a 50, variando T (Multiclase)')
-    plt.legend()
+    times_T_fixed, accs_T_fixed = zip(*results_T_fixed)
+    plt.plot(times_T_fixed, accs_T_fixed, label='T fijo en 50, A variable')
 
+    times_A_fixed, accs_A_fixed = zip(*results_A_fixed)
+    plt.plot(times_A_fixed, accs_A_fixed, label='A fijo en 20, T variable')
+
+    times_comb, accs_comb = zip(*results_combination)
+    plt.plot(times_comb, accs_comb, label='Combinaciones de T y A')
+
+    plt.xlabel('Tiempo acumulado (segundos)')
+    plt.ylabel('Precisión')
+    plt.title('Comparación de Diferentes Experimentos (Multiclase)')
+    plt.legend()
     plt.tight_layout()
     plt.show()
 
@@ -313,61 +473,96 @@ def train_and_evaluate_adaboost_multiclase_pca():
     print(f"Matriz de confusión para el clasificador multiclase con PCA:\n{cm}")
 
 # Función de experimentación para Adaboost multiclase con PCA
+
 def experiment_with_parameters_multiclase_pca():
     print("Experimentando con parámetros multiclase con PCA")
     X_train, Y_train, X_test, Y_test = load_MNIST_for_adaboost()
     X_train_pca, X_test_pca = apply_pca(X_train, X_test, n_components=50)
 
-    T_values = [10, 40, 70]  # Ajustados para que T*A <= 3600
-    A_values = [10, 20, 30]  # Ajustados para que T*A <= 3600
+    T_values = [10, 40, 70]
+    A_values = [10, 40, 70]
 
     results_T_fixed = []
     results_A_fixed = []
+    start_time_total = time.time()
 
+    # Experimento con A fijo y T variable
     for T in T_values:
+        print(f"Probando con T={T} y A=20")
         accs = []
-        for _ in range(3):  # Ejecutar 3 veces para promediar
-            classifier = AdaboostMulticlase(T=T, A=50)
+        start_time = time.time()
+        for i in range(5):
+            print(f"  Ejecución {i+1}/5")
+            classifier = AdaboostMulticlase(T=T, A=20)
             classifier.fit(X_train_pca, Y_train)
             y_pred = classifier.predict(X_test_pca)
-            accuracy = accuracy_score(Y_test, y_pred)
-            accs.append(accuracy)
-        results_T_fixed.append((T, np.mean(accs)))
+            accs.append(accuracy_score(Y_test, y_pred))
+        end_time = time.time()
+        results_T_fixed.append((end_time - start_time_total, np.mean(accs)))
+        print(f"  Precisión media para T={T}: {np.mean(accs)} en {end_time - start_time_total} segundos")
 
+    # Experimento con T fijo y A variable
     for A in A_values:
+        print(f"Probando con T=50 y A={A}")
         accs = []
-        for _ in range(5):  # Ejecutar 3 veces para promediar
+        start_time = time.time()
+        for i in range(5):
+            print(f"  Ejecución {i+1}/5")
             classifier = AdaboostMulticlase(T=50, A=A)
             classifier.fit(X_train_pca, Y_train)
             y_pred = classifier.predict(X_test_pca)
-            accuracy = accuracy_score(Y_test, y_pred)
-            accs.append(accuracy)
-        results_A_fixed.append((A, np.mean(accs)))
+            accs.append(accuracy_score(Y_test, y_pred))
+        end_time = time.time()
+        results_A_fixed.append((end_time - start_time_total, np.mean(accs)))
+        print(f"  Precisión media para A={A}: {np.mean(accs)} en {end_time - start_time_total} segundos")
+
+    # Exploración de combinaciones
+    best_accuracy = 0
+    best_T = None
+    best_A = None
+    results_combination = []
+
+    print("Explorando combinaciones de T y A...")
+    T_values_comb = [10, 40, 70]
+    A_values_comb = [10, 40, 70]
+    for T in T_values_comb:
+        for A in A_values_comb:
+            if T * A > 3600:
+                continue
+            accs = []
+            for i in range(5):
+                classifier = AdaboostMulticlase(T=T, A=A)
+                classifier.fit(X_train_pca, Y_train)
+                y_pred = classifier.predict(X_test_pca)
+                accs.append(accuracy_score(Y_test, y_pred))
+            avg_accuracy = np.mean(accs)
+            results_combination.append((time.time() - start_time_total, avg_accuracy))
+            if avg_accuracy > best_accuracy:
+                best_accuracy = avg_accuracy
+                best_T = T
+                best_A = A
+        print(f"  Combinación T={T} completada")
+
+    print(f"Mejor combinación T={best_T}, A={best_A} con exactitud={best_accuracy}")
 
     # Gráficas
     plt.figure(figsize=(12, 6))
     
-    # T fijo y variando A
-    plt.subplot(1, 2, 1)
-    A_vals, accs = zip(*results_A_fixed)
-    plt.plot(A_vals, accs, label='Precision')
-    plt.xlabel('A')
-    plt.ylabel('Precision')
-    plt.title('T ajustado a 50, variando A (Multiclase with PCA)')
-    plt.legend()
+    times_T_fixed, accs_T_fixed = zip(*results_T_fixed)
+    plt.plot(times_T_fixed, accs_T_fixed, label='T fijo en 50, A variable')
+    
+    times_A_fixed, accs_A_fixed = zip(*results_A_fixed)
+    plt.plot(times_A_fixed, accs_A_fixed, label='A fijo en 20, T variable')
+    
+    times_comb, accs_comb = zip(*results_combination)
+    plt.plot(times_comb, accs_comb, label='Combinaciones de T y A')
 
-    # A fijo y variando T
-    plt.subplot(1, 2, 2)
-    T_vals, accs = zip(*results_T_fixed)
-    plt.plot(T_vals, accs, label='Precision')
-    plt.xlabel('T')
-    plt.ylabel('Precision')
-    plt.title('A ajustado a 50, variando T (Multiclase with PCA)')
+    plt.xlabel('Tiempo acumulado (segundos)')
+    plt.ylabel('Precisión')
+    plt.title('Comparación de Diferentes Experimentos (Multiclase con PCA)')
     plt.legend()
-
     plt.tight_layout()
     plt.show()
-
 
 def train_and_evaluate_adaboost_multiclase_stop_overfitting():
     print("Entrenando y evaluando Adaboost multiclase con detección de sobreentrenamiento")
@@ -388,37 +583,47 @@ def experiment_with_parameters_stop_overfitting():
     print("Experimentando con parámetros para detección de sobreentrenamiento")
     X_train, Y_train, X_test, Y_test = load_MNIST_for_adaboost()
 
-    T_values = [ 40, 90]  # Ajustados para que T*A <= 3600
-    validation_ratios = [0.1,0.3, 0.4,0.5]
+    T_values = [40, 90]
+    validation_ratios = [0.1, 0.3, 0.4, 0.5]
 
     results = []
+    start_time_total = time.time()
 
     for validation_ratio in validation_ratios:
+        print(f"Probando con ratio de validación={validation_ratio}")
         for T in T_values:
+            print(f"  Probando con T={T}")
             accs = []
-            for _ in range(5):  # Ejecutar 3 veces para promediar
+            start_time = time.time()
+            for i in range(5):
+                print(f"    Ejecución {i+1}/5")
+                # Dividir en entrenamiento y validación según el ratio actual
+                X_train_split, X_val, y_train_split, y_val = train_test_split(X_train, Y_train, test_size=validation_ratio, random_state=42)
                 classifier = AdaboostMulticlase(T=T, A=50)
                 classifier.classifiers = [AdaboostBinarioConDeteccion(T=T, A=50) for _ in range(10)]
-                classifier.fit(X_train, Y_train)
+                classifier.fit(X_train_split, y_train_split)
                 y_pred = classifier.predict(X_test)
                 accuracy = accuracy_score(Y_test, y_pred)
                 accs.append(accuracy)
-            results.append((validation_ratio, T, np.mean(accs)))
+            end_time = time.time()
+            results.append((validation_ratio, T, end_time - start_time_total, np.mean(accs)))
+            print(f"    Precisión media para T={T}, ratio de validación={validation_ratio}: {np.mean(accs)} en {end_time - start_time_total} segundos")
 
     # Gráficas
     plt.figure(figsize=(12, 6))
 
     for validation_ratio in validation_ratios:
-        subset = [(T, acc) for (vr, T, acc) in results if vr == validation_ratio]
-        T_vals, accs = zip(*subset)
-        plt.plot(T_vals, accs, label=f'Ratio de validacion de precision {validation_ratio}')
+        subset = [(T, acc, time) for (vr, T, time, acc) in results if vr == validation_ratio]
+        T_vals, accs, times = zip(*subset)
+        plt.plot(times, accs, label=f'Ratio de validacion {validation_ratio}')
 
-    plt.xlabel('T')
-    plt.ylabel('Precision')
-    plt.title('Variando T para diferentes ratios')
+    plt.xlabel('Tiempo acumulado (segundos)')
+    plt.ylabel('Precisión')
+    plt.title('Variando T para diferentes ratios de validación')
     plt.legend()
     plt.tight_layout()
     plt.show()
+
 
 def train_and_evaluate_sklearn_adaboost_deep_tree(X_train, y_train, X_test, y_test, n_estimators=50, max_depth=3, min_samples_split=2, min_samples_leaf=1, max_features=None):
     """
@@ -456,11 +661,11 @@ def experiment_with_deep_tree_parameters(X_train, y_train, X_test, y_test):
     best_params = {}
     
     # Experimentar con diferentes valores de n_estimators, max_depth, min_samples_split, min_samples_leaf y max_features
-    for n_estimators in [50, 100, 200]:
-        for max_depth in [3, 5, 7]:
-            for min_samples_split in [2, 5, 10]:
-                for min_samples_leaf in [1, 2, 4]:
-                    for max_features in [None, 'sqrt', 'log2']:
+    for n_estimators in [10,50, 100]:
+        for max_depth in [3,5,7]:
+            for min_samples_split in [2,5, 10]:
+                for min_samples_leaf in [1,2, 4]:
+                    for max_features in ['log2']:
                         print(f"Evaluando configuración: n_estimators={n_estimators}, max_depth={max_depth}, min_samples_split={min_samples_split}, min_samples_leaf={min_samples_leaf}, max_features={max_features}")
                         accuracy = train_and_evaluate_sklearn_adaboost_deep_tree(X_train, y_train, X_test, y_test,
                                                                                 n_estimators=n_estimators, max_depth=max_depth,
@@ -483,14 +688,159 @@ def experiment_with_deep_tree_parameters(X_train, y_train, X_test, y_test):
     print(f"Mejores parámetros encontrados: {best_params}")
     return best_params, best_accuracy
 
+def build_and_train_mlp(X_train, y_train, X_test, y_test, layers=[128, 64], activation='relu', optimizer='adam', batch_size=32, epochs=10, learning_rate=0.001):
+    """
+    Construye y entrena un MLP con los parámetros dados.
+    """
+    print(f"Construyendo y entrenando MLP con capas={layers}, activación={activation}, optimizador={optimizer}, batch_size={batch_size}, epochs={epochs}, learning_rate={learning_rate}")
 
+    model = Sequential()
+    model.add(Dense(layers[0], input_shape=(X_train.shape[1],), activation=activation))
+    
+    for layer_size in layers[1:]:
+        model.add(Dense(layer_size, activation=activation))
+    
+    model.add(Dense(10, activation='softmax'))  # Capa de salida para clasificación de 10 clases
+
+    if optimizer == 'adam':
+        optimizer = Adam(learning_rate=learning_rate)
+    elif optimizer == 'sgd':
+        optimizer = SGD(learning_rate=learning_rate)
+    
+    model.compile(optimizer=optimizer, loss='sparse_categorical_crossentropy', metrics=['accuracy'])
+    
+    history = model.fit(X_train, y_train, epochs=epochs, batch_size=batch_size, validation_data=(X_test, y_test), verbose=1)
+    
+    test_loss, test_acc = model.evaluate(X_test, y_test, verbose=0)
+    print(f"Precisión del MLP en el conjunto de prueba: {test_acc:.4f}")
+    return test_acc, history
+
+
+def experiment_with_mlp_parameters(X_train, y_train, X_test, y_test):
+    """
+    Experimenta con diferentes configuraciones de parámetros para el MLP y busca la mejor tasa de acierto posible.
+    """
+    print("Comenzando experimentos con diferentes configuraciones de parámetros para MLP")
+    best_accuracy = 0
+    best_params = {}
+
+    layers_options = [[128, 64], [256, 128], [512, 256]]
+    activations = ['relu', 'tanh']
+    optimizers = ['adam', 'sgd']
+    batch_sizes = [32, 64]
+    learning_rates = [0.001, 0.01]
+    epochs = 10  # Mantener un número fijo de épocas para comparar
+
+    for layers in layers_options:
+        for activation in activations:
+            for optimizer in optimizers:
+                for batch_size in batch_sizes:
+                    for learning_rate in learning_rates:
+                        print(f"Evaluando configuración: capas={layers}, activación={activation}, optimizador={optimizer}, batch_size={batch_size}, learning_rate={learning_rate}")
+                        accuracy, history = build_and_train_mlp(X_train, y_train, X_test, y_test,
+                                                                layers=layers, activation=activation, optimizer=optimizer,
+                                                                batch_size=batch_size, epochs=epochs, learning_rate=learning_rate)
+                        if accuracy > best_accuracy:
+                            best_accuracy = accuracy
+                            best_params = {
+                                'layers': layers,
+                                'activation': activation,
+                                'optimizer': optimizer,
+                                'batch_size': batch_size,
+                                'learning_rate': learning_rate
+                            }
+                            print(f"Nueva mejor precisión encontrada: {best_accuracy}")
+                            print(f"Nuevos mejores parámetros: {best_params}")
+    
+    print(f"Mejor precisión obtenida: {best_accuracy}")
+    print(f"Mejores parámetros encontrados: {best_params}")
+    return best_params, best_accuracy
+
+def build_and_train_cnn(X_train, y_train, X_test, y_test, conv_layers=[(32, 3, 2)], dense_layers=[128], activation='relu', optimizer='adam', batch_size=32, epochs=5, learning_rate=0.001):
+    """
+    Construye y entrena una CNN con los parámetros dados.
+    """
+    print(f"Construyendo y entrenando CNN con capas_conv={conv_layers}, capas_dense={dense_layers}, activación={activation}, optimizador={optimizer}, batch_size={batch_size}, epochs={epochs}, learning_rate={learning_rate}")
+
+    model = Sequential()
+    input_shape = (28, 28, 1)
+    
+    for filters, kernel_size, pool_size in conv_layers:
+        if model.layers:
+            model.add(Conv2D(filters, (kernel_size, kernel_size), activation=activation))
+        else:
+            model.add(Conv2D(filters, (kernel_size, kernel_size), activation=activation, input_shape=input_shape))
+        model.add(MaxPooling2D(pool_size=(pool_size, pool_size)))
+    
+    model.add(Flatten())
+
+    for layer_size in dense_layers:
+        model.add(Dense(layer_size, activation=activation))
+    
+    model.add(Dense(10, activation='softmax'))  # Capa de salida para clasificación de 10 clases
+
+    if optimizer == 'adam':
+        optimizer = Adam(learning_rate=learning_rate)
+    elif optimizer == 'sgd':
+        optimizer = SGD(learning_rate=learning_rate)
+    
+    model.compile(optimizer=optimizer, loss='sparse_categorical_crossentropy', metrics=['accuracy'])
+    
+    history = model.fit(X_train, y_train, epochs=epochs, batch_size=batch_size, validation_data=(X_test, y_test), verbose=1)
+    
+    test_loss, test_acc = model.evaluate(X_test, y_test, verbose=0)
+    print(f"Precisión de la CNN en el conjunto de prueba: {test_acc:.4f}")
+    return test_acc, history
+
+def experiment_with_cnn_parameters(X_train, y_train, X_test, y_test):
+    """
+    Experimenta con diferentes configuraciones de parámetros para la CNN y busca la mejor tasa de acierto posible.
+    """
+    print("Comenzando experimentos con diferentes configuraciones de parámetros para CNN")
+    best_accuracy = 0
+    best_params = {}
+
+    conv_layers_options = [[(32, 3, 2)], [(64, 3, 2)], [(64, 3, 2), (32, 3, 2)]]
+    dense_layers_options = [[128], [256]]
+    activations = ['relu']
+    optimizers = ['adam']
+    batch_sizes = [32]
+    learning_rates = [0.001]
+    epochs = 3  # Reducir el número de épocas para acelerar los experimentos
+
+    for conv_layers in conv_layers_options:
+        for dense_layers in dense_layers_options:
+            for activation in activations:
+                for optimizer in optimizers:
+                    for batch_size in batch_sizes:
+                        for learning_rate in learning_rates:
+                            print(f"Evaluando configuración: conv_layers={conv_layers}, dense_layers={dense_layers}, activación={activation}, optimizador={optimizer}, batch_size={batch_size}, learning_rate={learning_rate}")
+                            accuracy, history = build_and_train_cnn(X_train, y_train, X_test, y_test,
+                                                                    conv_layers=conv_layers, dense_layers=dense_layers,
+                                                                    activation=activation, optimizer=optimizer,
+                                                                    batch_size=batch_size, epochs=epochs, learning_rate=learning_rate)
+                            if accuracy > best_accuracy:
+                                best_accuracy = accuracy
+                                best_params = {
+                                    'conv_layers': conv_layers,
+                                    'dense_layers': dense_layers,
+                                    'activation': activation,
+                                    'optimizer': optimizer,
+                                    'batch_size': batch_size,
+                                    'learning_rate': learning_rate
+                                }
+                                print(f"Nueva mejor precisión encontrada: {best_accuracy}")
+                                print(f"Nuevos mejores parámetros: {best_params}")
+    
+    print(f"Mejor precisión obtenida: {best_accuracy}")
+    print(f"Mejores parámetros encontrados: {best_params}")
+    return best_params, best_accuracy
 
 def main():
-    
     X_train, Y_train, X_test, Y_test = load_MNIST_for_adaboost()
     
     # Primero entrenamos y evaluamos los clasificadores (Parte 1A)
-#     train_and_evaluate_adaboost()
+    train_and_evaluate_adaboost()
     
     # Luego hacemos los experimentos con los parámetros T y A (Parte 1B)
 #     experiment_with_parameters()
@@ -504,18 +854,33 @@ def main():
 #     experiment_with_parameters_multiclase_pca()
 #     
     # Parte 1E
-#     train_and_evaluate_adaboost_multiclase_stop_overfitting()
-#     experiment_with_parameters_stop_overfitting()
+    train_and_evaluate_adaboost_multiclase_stop_overfitting()
+    experiment_with_parameters_stop_overfitting()
     
     # Parte 2A
 #     train_and_evaluate_sklearn_adaboost(X_train, Y_train, X_test, Y_test)
 #     experiment_with_sklearn_adaboost_parameters(X_train, Y_train, X_test, Y_test)
     
-        # Parte 2B
-    best_params_2b, best_accuracy_2b = experiment_with_deep_tree_parameters(X_train, Y_train, X_test, Y_test)
-    print(f"Mejores parámetros recomendados: {best_params_2b} con tasa de acierto={best_accuracy_2b:.4f}")
+    # Parte 2B
+#     best_params_2b, best_accuracy_2b = experiment_with_deep_tree_parameters(X_train, Y_train, X_test, Y_test)
+#     print(f"Mejores parámetros recomendados: {best_params_2b} con tasa de acierto={best_accuracy_2b:.4f}")
+
+    # Parte 2C
+#     best_params_2c, best_accuracy_2c = experiment_with_mlp_parameters(X_train, Y_train, X_test, Y_test)
+#     print(f"Mejores parámetros recomendados para MLP: {best_params_2c} con tasa de acierto={best_accuracy_2c:.4f}")
+
+    # Parte 2D
+    
+#     X_train = X_train.reshape(-1, 28, 28, 1)
+#     X_test = X_test.reshape(-1, 28, 28, 1)
+#     
+     
+#     best_params_2d, best_accuracy_2d = experiment_with_cnn_parameters(X_train, Y_train, X_test, Y_test)
+#     print(f"Mejores parámetros recomendados para CNN: {best_params_2d} con tasa de acierto={best_accuracy_2d:.4f}")
     
     print("FIN")
+
+
 
 if __name__ == "__main__":
     main()
